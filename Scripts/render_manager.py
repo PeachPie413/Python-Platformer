@@ -22,10 +22,11 @@ def create_game_window():
 
 
 
-@dataclass
 class Renderable_Rect:
-    width, height: float
-    color: py.Color
+    def __init__(self, color = (255, 192, 203), width = 1.0, height = 1.0) -> None:
+        self.color = color
+        self.width = width
+        self.height = height
 
 class Camera_Follow:
     def __init__(self) -> None:
@@ -35,10 +36,17 @@ class Camera_Follow:
 class Render_Processor(e.Processor):
 
     def get_world_to_pix_ratio(self):
-        return camera_zoom / gb.SCREEN_WIDTH
+        return gb.SCREEN_WIDTH / camera_zoom
 
-    def get_scaled_rect(self, unscaled_rect = py.Rect(0,0,0,0), world_to_pix = 0.0):
-        return unscaled_rect * world_to_pix
+    def get_scaled_rect(self, unscaled_rect = Renderable_Rect(), world_to_pix = 0.0, pos = core.Position()):
+
+        left = float(pos.x - unscaled_rect.width / 2.0) * world_to_pix
+        top = float(pos.y + unscaled_rect.height / 2.0) * world_to_pix
+
+        return py.Rect(
+            left, top,
+            unscaled_rect.width * world_to_pix, unscaled_rect.height * world_to_pix
+        )
 
     def get_renderables(self):
         return gb.entity_world.get_components((core.Position, Renderable_Rect))
@@ -46,11 +54,8 @@ class Render_Processor(e.Processor):
     def get_scaled_renderables(self, world_to_pix):
         render_rects_scaled = []
     
-        for ent, (render_rect, pos) in gb.entity_world.get_components(core.Position, Renderable_Rect):
-
-            rect =  
-
-            render_rects_scaled.append((self.get_scaled_rect(render_rect, world_to_pix), render_rect.color))
+        for ent, (pos, render_rect) in gb.entity_world.get_components(core.Position, Renderable_Rect):
+            render_rects_scaled.append((self.get_scaled_rect(render_rect, world_to_pix, pos), render_rect.color))
 
         return render_rects_scaled
 
