@@ -40,8 +40,8 @@ class Render_Processor(e.Processor):
 
     def get_scaled_rect(self, unscaled_rect = Renderable_Rect(), world_to_pix = 0.0, pos = core.Position()):
 
-        left = float(pos.x - unscaled_rect.width / 2.0) * world_to_pix
-        top = float(pos.y + unscaled_rect.height / 2.0) * world_to_pix
+        left = (pos.x - camera_position.x - unscaled_rect.width / 2.0) * world_to_pix
+        top = (pos.y - camera_position.y + unscaled_rect.height / 2.0) * world_to_pix
 
         return py.Rect(
             left, top,

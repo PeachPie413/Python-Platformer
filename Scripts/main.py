@@ -21,15 +21,19 @@ while not game_done:
             game_done = True
 
         #move player
-        current_player_pos = gb.entity_world.component_for_entity(player_entity, Position)
-        if input_event.type == py.K_d:
-            current_player_pos.x += 1
-        if input_event.type == py.K_a:
-            current_player_pos.x -= 1
-        if input_event.type == py.K_w:
-            current_player_pos.y += 1
-        if input_event.type == py.K_s:
-            current_player_pos.y -= 1
+        if input_event.type == py.KEYDOWN:
+            current_player_pos = gb.entity_world.component_for_entity(player_entity, Position)
+            if input_event.key == py.K_d:
+                current_player_pos.x += 1
+            if input_event.key == py.K_a:
+                current_player_pos.x -= 1
+            if input_event.key == py.K_w:
+                current_player_pos.y += 1
+            if input_event.key == py.K_s:
+                current_player_pos.y -= 1
+
+            if input_event.key == py.K_DOWN:
+                render_manager.camera_position.x += 1
         
 
     gb.entity_world.process()
