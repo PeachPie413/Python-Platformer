@@ -14,8 +14,6 @@ background_color = (255,255,255)
 
 
 
-
-
 def create_game_window():
     gb.game_window = py.display.set_mode((gb.SCREEN_WIDTH, gb.SCREEN_HEIGHT))
 

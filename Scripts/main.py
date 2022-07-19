@@ -6,6 +6,7 @@ import render_manager
 import pygame as py
 import core_classes as core
 
+py.init()
 
 render_manager.create_game_window()
 
