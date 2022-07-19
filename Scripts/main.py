@@ -11,7 +11,8 @@ py.init()
 render_manager.create_game_window()
 
 gb.entity_world.add_processor(render_manager.Render_Processor())
-player_entity = gb.entity_world.create_entity(render_manager.Renderable_Rect(), core.Position())
+gb.entity_world.add_processor(render_manager.Follow_Camera_Processor())
+player_entity = gb.entity_world.create_entity(render_manager.Renderable_Rect(), core.Position(), render_manager.Camera_Follow())
 
 #main game loop
 game_done = False

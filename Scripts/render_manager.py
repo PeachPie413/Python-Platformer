@@ -1,3 +1,4 @@
+from core_classes import *
 import global_variables as gb
 from dataclasses import dataclass
 import pygame as py
@@ -8,7 +9,7 @@ import core_classes as core
 
 #width of the camera veiw in WU (world units)
 camera_zoom = 10
-camera_position = core.Position()
+camera_position = core.Vector2()
 #background color, when nothing is being rendered
 background_color = (255,255,255)
 
@@ -31,12 +32,29 @@ class Camera_Follow:
         pass
 
 
+
+class Follow_Camera_Processor(e.Processor):
+
+    def process(self):
+        global camera_position
+
+        camera_followers = gb.entity_world.get_components(Camera_Follow, Position)
+
+        #if there is a camera follower then get the first one and use that
+        if(len(camera_followers) > 0):
+            ent, (camera_follow, pos) = camera_followers[0]
+
+            camera_position = pos - Vector2(10, gb.SCREEN_WIDTH_TO_HEIGHT_RATIO / 10) * 0.5
+
+
 class Render_Processor(e.Processor):
 
     def get_world_to_pix_ratio(self):
         return gb.SCREEN_WIDTH / camera_zoom
 
     def get_scaled_rect(self, unscaled_rect = Renderable_Rect(), world_to_pix = 0.0, pos = core.Position()):
+
+        global camera_position
 
         left = (pos.x - camera_position.x - unscaled_rect.width / 2.0) * world_to_pix
         top = (pos.y - camera_position.y + unscaled_rect.height / 2.0) * world_to_pix
