@@ -32,9 +32,7 @@ while not gb.game_done:
     #move player
     current_player_pos = gb.entity_world.component_for_entity(player_entity, Position)
     input_dir = gb.entity_world.component_for_entity(player_entity, input_manager.Input_Direction)
-
-    if input_dir.input_direction.x == 1.0:
-        current_player_pos += input_dir.input_direction * gb.delta_time
+    current_player_pos.vector += input_dir.input_direction * 10.0 * gb.delta_time
         
 
     gb.entity_world.process()

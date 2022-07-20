@@ -56,16 +56,15 @@ class Render_Processor(e.Processor):
 
         global camera_position
 
-        left = (pos.x - camera_position.x - unscaled_rect.width / 2.0) * world_to_pix
-        top = (pos.y - camera_position.y + unscaled_rect.height / 2.0) * world_to_pix
+        #flip y cause pygame does top of screen is 0,0
+        left = (pos.vector.x - camera_position.x / 2.0) * world_to_pix
+        top = (-pos.vector.y - camera_position.y / 2.0) * world_to_pix
 
         return py.Rect(
             left, top,
             unscaled_rect.width * world_to_pix, unscaled_rect.height * world_to_pix
         )
 
-    def get_renderables(self):
-        return gb.entity_world.get_components((core.Position, Renderable_Rect))
 
     def get_scaled_renderables(self, world_to_pix):
         render_rects_scaled = []
