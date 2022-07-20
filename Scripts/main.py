@@ -3,6 +3,7 @@ import time
 from core_classes import Position
 import global_variables as gb
 import render_manager
+import input_manager
 import pygame as py
 import core_classes as core
 
@@ -10,32 +11,30 @@ py.init()
 
 render_manager.create_game_window()
 
+#add processors to the world
 gb.entity_world.add_processor(render_manager.Render_Processor())
 gb.entity_world.add_processor(render_manager.Follow_Camera_Processor())
-player_entity = gb.entity_world.create_entity(render_manager.Renderable_Rect(), core.Position(), render_manager.Camera_Follow())
+gb.entity_world.add_processor(input_manager.Input_Processor())
+
+#create player entity
+player_entity = gb.entity_world.create_entity(
+    render_manager.Renderable_Rect(), 
+    core.Position(), 
+    # render_manager.Camera_Follow(),
+    input_manager.Input_Direction())
 
 #main game loop
-game_done = False
-while not game_done:
+delta_time_clock = py.time.Clock()
+while not gb.game_done:
 
-    for input_event in py.event.get():
-        if input_event.type == py.QUIT:
-            game_done = True
+    gb.delta_time = delta_time_clock.tick(60) / 1000.0
 
-        #move player
-        if input_event.type == py.KEYDOWN:
-            current_player_pos = gb.entity_world.component_for_entity(player_entity, Position)
-            if input_event.key == py.K_d:
-                current_player_pos.x += 1
-            if input_event.key == py.K_a:
-                current_player_pos.x -= 1
-            if input_event.key == py.K_w:
-                current_player_pos.y += 1
-            if input_event.key == py.K_s:
-                current_player_pos.y -= 1
+    #move player
+    current_player_pos = gb.entity_world.component_for_entity(player_entity, Position)
+    input_dir = gb.entity_world.component_for_entity(player_entity, input_manager.Input_Direction)
 
-            if input_event.key == py.K_DOWN:
-                render_manager.camera_position.x += 1
+    if input_dir.input_direction.x == 1.0:
+        current_player_pos += input_dir.input_direction * gb.delta_time
         
 
     gb.entity_world.process()
