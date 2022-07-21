@@ -44,7 +44,7 @@ class Follow_Camera_Processor(e.Processor):
         if(len(camera_followers) > 0):
             ent, (camera_follow, pos) = camera_followers[0]
 
-            camera_position = pos - Vector2(10, gb.SCREEN_WIDTH_TO_HEIGHT_RATIO / 10) * 0.5
+            camera_position = pos.vector - Vector2(10, gb.SCREEN_WIDTH_TO_HEIGHT_RATIO / 10) * 0.5
 
 
 class Render_Processor(e.Processor):
@@ -58,7 +58,7 @@ class Render_Processor(e.Processor):
 
         #flip y cause pygame does top of screen is 0,0
         left = (pos.vector.x - camera_position.x / 2.0) * world_to_pix
-        top = (-pos.vector.y - camera_position.y / 2.0) * world_to_pix
+        top = gb.SCREEN_HEIGHT - ((pos.vector.y - camera_position.y / 2.0) * world_to_pix)
 
         return py.Rect(
             left, top,
