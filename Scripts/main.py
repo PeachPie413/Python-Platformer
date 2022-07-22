@@ -24,7 +24,8 @@ falling_box = gb.entity_world.create_entity(
     Position(Vector2(0,3)),
     Collider(1,1),
     render_manager.Renderable_Rect(),
-    Velocity()
+    Velocity(),
+    input_manager.Input_Direction()
 )
 platform = gb.entity_world.create_entity(
     Position(Vector2(-2,0)),
@@ -33,7 +34,7 @@ platform = gb.entity_world.create_entity(
 )
 camera = gb.entity_world.create_entity(
     Camera_Follow(),
-    Position(),
+    Position(Vector2(-2, -4)),
     input_manager.Input_Direction()
 )
 
@@ -44,8 +45,8 @@ while not gb.game_done:
     gb.delta_time = delta_time_clock.tick(60) / 1000.0
 
     #move player
-    current_camera_pos = gb.entity_world.component_for_entity(camera, Position)
-    input_dir = gb.entity_world.component_for_entity(camera, input_manager.Input_Direction)
+    current_camera_pos = gb.entity_world.component_for_entity(falling_box, Position)
+    input_dir = gb.entity_world.component_for_entity(falling_box, input_manager.Input_Direction)
     current_camera_pos.vector += input_dir.input_direction * 10.0 * gb.delta_time
         
 
