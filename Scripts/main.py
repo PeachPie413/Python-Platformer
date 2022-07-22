@@ -29,8 +29,8 @@ falling_box = gb.entity_world.create_entity(
 )
 platform = gb.entity_world.create_entity(
     Position(Vector2(-2,0)),
-    Collider(4,1),
-    render_manager.Renderable_Rect((0,0,0), 4, 1)
+    Collider(2,1),
+    render_manager.Renderable_Rect((0,0,0), 2, 1)
 )
 camera = gb.entity_world.create_entity(
     Camera_Follow(),

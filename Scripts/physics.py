@@ -34,10 +34,10 @@ class Velocity_Processor(e.Processor):
     def aabb_collision(self, a_collider = Collider(), a_pos = Position(), b_collider = Collider(), b_pos = Position()):
         a_max_x = a_pos.vector.x + a_collider.width / 2.0
         a_min_x = a_pos.vector.x - a_collider.width / 2.0
-        a_max_y = a_pos.vector.y + a_collider.height / 2.0
-        a_min_y = a_pos.vector.y - a_collider.height / 2.0
         b_max_x = b_pos.vector.x + b_collider.width / 2.0
         b_min_x = b_pos.vector.x - b_collider.width / 2.0
+        a_max_y = a_pos.vector.y + a_collider.height / 2.0
+        a_min_y = a_pos.vector.y - a_collider.height / 2.0
         b_max_y = b_pos.vector.y + b_collider.height / 2.0
         b_min_y = b_pos.vector.y - b_collider.height / 2.0
         return a_max_x > b_min_x and b_max_x > a_min_x and a_max_y > b_min_y and b_max_y > a_min_y
