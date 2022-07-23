@@ -62,23 +62,19 @@ class Velocity_Processor(e.Processor):
             
 
     def try_set_pos_collision(self, pos = Vector2(), collider = Collider(), colliding_collider = Collider(), colliding_pos = Vector2(), min_pos_change = 0.0):
-        #if collision of x is smaller than y then do x, vice versa for y
-        x1 = max(pos.x, colliding_pos.x)
-        y1 = max(pos.y, colliding_pos.y)
-        x2 = min(pos.x + collider.width/2.0, colliding_pos.x + colliding_collider.width/2.0)
-        y2 = min(pos.y + collider.height/2.0, colliding_pos.y + colliding_collider.height/2.0)
+
+        #get move amount for dimensions
+        move_amount_x = (collider.width + colliding_collider.width) / 2.0 - abs(pos.x - colliding_pos.x)
+        move_amount_y = (collider.height + colliding_collider.height) / 2.0 - abs(pos.y - colliding_pos.y)
 
         #collision on width
-        if x2 - x1 < y2 - y1:
-            #set pos
-            # if pos.x > colliding_pos.x:
-            #     pos.x += x2 - x1
-            # else:
-            #     pos.x -= x2 - x1
-            print('x collision')
+        if move_amount_x < move_amount_y:
+            #get amount to move on x axis
+            pos.x += math.copysign(move_amount_x, pos.x - colliding_pos.x)
         #collision on height
         else:
-            print('y collision')
+            #get amount to move on x axis
+            pos.y += math.copysign(move_amount_y, pos.y - colliding_pos.y)
 
     '''sets the pos of the collider it is colliding with'''
     def set_collider_pos(self, pos = Vector2(), self_collider = Collider(), colliding_colliders = []):

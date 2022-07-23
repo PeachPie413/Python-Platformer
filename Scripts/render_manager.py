@@ -57,8 +57,8 @@ class Render_Processor(e.Processor):
         global camera_position
 
         #flip y cause pygame does top of screen is 0,0
-        left = (pos.vector.x - camera_position.x / 2.0) * world_to_pix
-        top = gb.SCREEN_HEIGHT - ((pos.vector.y - camera_position.y / 2.0) * world_to_pix)
+        left = (pos.vector.x - camera_position.x - unscaled_rect.width / 2.0) * world_to_pix
+        top = gb.SCREEN_HEIGHT - ((pos.vector.y - camera_position.y + unscaled_rect.height/2.0) * world_to_pix)
 
         return py.Rect(
             left, top,
