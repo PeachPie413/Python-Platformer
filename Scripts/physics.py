@@ -6,11 +6,13 @@ import math
 
 
 
-class Velocity(Vector2):
-    pass
+class Velocity():
+    def __init__(self, vector = Vector2()):
+        self.vector = vector
     
-class Acceleration(Vector2):
-    pass
+class Acceleration():
+    def __init__(self, vector = Vector2()) -> None:
+        self.vector = vector
 
 class Collider:
     def __init__(self, width = 0, height = 0):
@@ -24,7 +26,7 @@ class Acceleration_Processor(e.Processor):
 
     def process(self):
         for entity, (vel, acc) in gb.entity_world.get_components(Velocity, Acceleration):
-            vel += acc
+            vel.vector += acc.vector * gb.delta_time
 
 
 
@@ -90,6 +92,9 @@ class Velocity_Processor(e.Processor):
 
         #go through all entities w/ pos, veloc, and collider
         for ent, (pos, veloc, collider) in gb.entity_world.get_components(Position, Velocity, Collider):
+
+            #set new position
+            pos.vector += veloc.vector * gb.delta_time
 
             #check if there is a colliding collider
             if colliding_colliders := self.collider_is_colliding(pos, collider, ent):

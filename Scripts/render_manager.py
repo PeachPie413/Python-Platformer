@@ -10,7 +10,7 @@ import core_classes as core
 #width of the camera veiw in WU (world units)
 camera_zoom = 10
 camera_width = camera_zoom
-camera_height = camera_width * gb.SCREEN_WIDTH_TO_HEIGHT_RATIO
+camera_height = camera_width / gb.SCREEN_WIDTH_TO_HEIGHT_RATIO
 camera_position = core.Vector2()
 #background color, when nothing is being rendered
 background_color = (255,255,255)
@@ -59,8 +59,8 @@ class Render_Processor(e.Processor):
         global camera_position
 
         #flip y cause pygame does top of screen is 0,0
-        left = (pos.vector.x - camera_position.x - unscaled_rect.width / 2.0) * world_to_pix
-        top = gb.SCREEN_HEIGHT - ((pos.vector.y - camera_position.y + unscaled_rect.height/2.0 + camera_height/2.0) * world_to_pix)
+        left = (pos.vector.x - unscaled_rect.width / 2.0 - camera_position.x) * world_to_pix
+        top = gb.SCREEN_HEIGHT - ((pos.vector.y + unscaled_rect.height / 2.0 - camera_position.y + camera_height / 2.0) * world_to_pix)
 
         return py.Rect(
             left, top,

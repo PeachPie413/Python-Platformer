@@ -17,6 +17,7 @@ render_manager.create_game_window()
 gb.entity_world.add_processor(render_manager.Render_Processor(), -99)
 gb.entity_world.add_processor(render_manager.Follow_Camera_Processor())
 gb.entity_world.add_processor(input_manager.Input_Processor())
+gb.entity_world.add_processor(physics.Acceleration_Processor(), 98)
 gb.entity_world.add_processor(physics.Velocity_Processor(), 99)
 
 #create player entity
@@ -26,13 +27,19 @@ falling_box = gb.entity_world.create_entity(
     render_manager.Renderable_Rect(),
     Velocity(),
     input_manager.Input_Direction(),
-    render_manager.Camera_Follow()
+    render_manager.Camera_Follow(),
+    physics.Acceleration(Vector2(0,-9.8))
 )
 platform = gb.entity_world.create_entity(
-    Position(Vector2(-2,0)),
-    Collider(2,1),
-    render_manager.Renderable_Rect((0,0,0), 2, 1)
+    Position(Vector2(0,0)),
+    Collider(6,1),
+    render_manager.Renderable_Rect((0,0,0), 6, 1)
 )
+# camera = gb.entity_world.create_entity(
+#     input_manager.Input_Direction(),
+#     render_manager.Camera_Follow(),
+#     Position()
+# )
 
 #main game loop
 delta_time_clock = py.time.Clock()
