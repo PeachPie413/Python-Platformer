@@ -1,3 +1,4 @@
+from turtle import position
 from render_manager import Camera_Follow
 from core_classes import Vector2
 from physics import Collider, Velocity
@@ -46,11 +47,5 @@ delta_time_clock = py.time.Clock()
 while not gb.game_done:
 
     gb.delta_time = delta_time_clock.tick(60) / 1000.0
-
-    #move player
-    current_camera_pos = gb.entity_world.component_for_entity(falling_box, Position)
-    input_dir = gb.entity_world.component_for_entity(falling_box, input_manager.Input_Direction)
-    current_camera_pos.vector += input_dir.input_direction * 6.0 * gb.delta_time
-        
 
     gb.entity_world.process()
