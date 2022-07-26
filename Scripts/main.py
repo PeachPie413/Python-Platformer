@@ -18,7 +18,7 @@ render_manager.create_game_window()
 gb.entity_world.add_processor(render_manager.Render_Processor(), -99)
 gb.entity_world.add_processor(render_manager.Follow_Camera_Processor())
 gb.entity_world.add_processor(input_manager.Input_Processor())
-gb.entity_world.add_processor(physics.Acceleration_Processor(), 98)
+gb.entity_world.add_processor(physics.Forces_Processor(), 98)
 gb.entity_world.add_processor(physics.Velocity_Processor(), 99)
 
 #create player entity
@@ -29,10 +29,12 @@ falling_box = gb.entity_world.create_entity(
     Velocity(),
     input_manager.Input_Direction(),
     render_manager.Camera_Follow(),
-    physics.Acceleration(Vector2(0,-9.8))
+    physics.Constant_Force([Vector2(0,-99)]),
+    physics.Mass()
+
 )
 platform = gb.entity_world.create_entity(
-    Position(Vector2(0,0)),
+    Position(Vector2(0,-3)),
     Collider(6,1),
     render_manager.Renderable_Rect((0,0,0), 6, 1)
 )
