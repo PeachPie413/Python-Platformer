@@ -19,9 +19,17 @@ class Constant_Force:
     def __init__(self, forces = []) -> None:
         self.forces = forces
 
+class Impulse_Force:
+    def __init__(self, vector = Vector2()) -> None:
+        self.vector = vector
+
 class Mass:
     def __init__(self, mass = 1.0) -> None:
         self.mass = mass
+
+class Collided_Prev_Frame:
+    def __init__(self) -> None:
+        self.collided = False
         
 
 
@@ -89,9 +97,6 @@ class Velocity_Processor(e.Processor):
             #get amount to move on y axis
             pos.y += math.copysign(move_amount_y, pos.y - colliding_pos.y)
 
-            #cancel forces on y
-            self.cancel_const_forces(forces)
-
     '''sets the pos of the collider it is colliding with'''
     def set_collider_pos(self, pos = Vector2(), self_collider = Collider(), forces = Constant_Force(), colliding_colliders = []):
         
@@ -112,11 +117,29 @@ class Velocity_Processor(e.Processor):
         if force_sum != 0.0:
             forces.forces.append(Vector2(0, -force_sum))
 
+    def remove_cancel_forces(self, forces = []):
+
+        #force to remove is y, and y - all other forces = 0
+        for force in forces:
+
+            #get sum of forces, excluding current force
+            sum_forces = 0.0
+            for other_force in forces:
+                if other_force == force: continue
+
+                sum_forces += other_force.y
+
+            #if is force from ground, then remove it
+            if force.y - sum_forces == 0:
+                forces.remove(force)
+                return
+
+
 
     def process(self):
 
         #go through all entities w/ pos, veloc, and collider
-        for ent, (pos, veloc, collider, forces) in gb.entity_world.get_components(Position, Velocity, Collider, Constant_Force):
+        for ent, (pos, veloc, collider, forces, collided) in gb.entity_world.get_components(Position, Velocity, Collider, Constant_Force, Collided_Prev_Frame):
 
             #set new position
             pos.vector += veloc.vector * gb.delta_time
@@ -126,3 +149,19 @@ class Velocity_Processor(e.Processor):
 
                 #set new pos by colliding, rember to do either vertical or horizontal first
                 self.set_collider_pos(pos.vector, collider, forces, colliding_colliders)
+
+                #create cancel force if wasnt colliding last frame
+                if not collided.collided:
+                    self.cancel_const_forces(forces)
+
+                #set collided last frame
+                collided.collided = True
+
+            #else did not collide this frame
+            else:
+                
+                #if collided last frame then remove ground force
+                if collided.collided:
+                    self.remove_cancel_forces(forces.forces)
+
+                collided.collided = False
