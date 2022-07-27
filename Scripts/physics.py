@@ -18,6 +18,7 @@ class Collider:
 class Constant_Force:
     def __init__(self, forces = []) -> None:
         self.forces = forces
+        self.reaction_forces = Vector2()
 
 class Impulse_Force:
     def __init__(self, vector = Vector2()) -> None:
@@ -43,12 +44,24 @@ class Forces_Processor(e.Processor):
             force_sum = Vector2()
             for vec in force.forces:
                 force_sum += vec
+            force_sum += force.reaction_forces
+            
+            #multiply by delta time
+            force_sum *= gb.delta_time
+
+            #see if it has a impulse force component
+            impulse = gb.entity_world.try_component(ent, Impulse_Force)
+            if impulse != None:
+                #if it has a impulse component then add it's force and remove it from the entity
+                force_sum += impulse.vector
+                gb.entity_world.remove_component(ent, Impulse_Force)
 
             #change veloc based on forces and mass
-            veloc.vector += force_sum / mass.mass * gb.delta_time
+            veloc.vector += force_sum / mass.mass
 
 
 class Velocity_Processor(e.Processor):
+
 
     '''check if 2 aabb's are colliding'''
     def aabb_collision(self, a_collider = Collider(), a_pos = Position(), b_collider = Collider(), b_pos = Position()):
@@ -60,13 +73,11 @@ class Velocity_Processor(e.Processor):
         a_min_y = a_pos.vector.y - a_collider.height / 2.0
         b_max_y = b_pos.vector.y + b_collider.height / 2.0
         b_min_y = b_pos.vector.y - b_collider.height / 2.0
-        return a_max_x > b_min_x and b_max_x > a_min_x and a_max_y > b_min_y and b_max_y > a_min_y
+        return a_max_x >= b_min_x and b_max_x >= a_min_x and a_max_y >= b_min_y and b_max_y >= a_min_y
 
-    '''returns the collider(s) it is colliding with'''
+
+    '''returns the collider it is colliding with'''
     def collider_is_colliding(self, self_pos = Position(), self_collider = Collider(), self_ent = 0):
-
-        #create list of things collided with
-        collidied_colliders = []
 
         #go through all possible things to collide wit
         for ent, (pos, collider) in gb.entity_world.get_components(Position, Collider):
@@ -76,13 +87,13 @@ class Velocity_Processor(e.Processor):
 
             #check if they are colliding
             if(self.aabb_collision(collider, pos, self_collider, self_pos)):
-                collidied_colliders.append((collider, pos))
+                return (collider, pos)
 
-        return collidied_colliders
+        return None
             
 
-    def try_set_pos_collision(self, pos = Vector2(), collider = Collider(), forces = Constant_Force(), colliding_collider = Collider(),
-    colliding_pos = Vector2(), min_pos_change = 0.0):
+    '''set pos of collider given the collider it colides with. Returns side it collided with, false is x, true is y'''
+    def set_post_collision_pos(self, pos = Vector2(), collider = Collider(), colliding_collider = Collider(), colliding_pos = Vector2()):
 
         #get move amount for dimensions
         move_amount_x = (collider.width + colliding_collider.width) / 2.0 - abs(pos.x - colliding_pos.x)
@@ -92,19 +103,13 @@ class Velocity_Processor(e.Processor):
         if move_amount_x < move_amount_y:
             #get amount to move on x axis
             pos.x += math.copysign(move_amount_x, pos.x - colliding_pos.x)
+            return False
         #collision on height
         else:
             #get amount to move on y axis
             pos.y += math.copysign(move_amount_y, pos.y - colliding_pos.y)
+            return True
 
-    '''sets the pos of the collider it is colliding with'''
-    def set_collider_pos(self, pos = Vector2(), self_collider = Collider(), forces = Constant_Force(), colliding_colliders = []):
-        
-        min_pos_change = 100.0
-
-        #go through all collided colliders
-        for (collider, collider_pos) in colliding_colliders:
-            self.try_set_pos_collision(pos, self_collider, forces, collider, collider_pos.vector, min_pos_change)
 
     '''set the forces on an object to equal 0 on the y axis when it is colliding with the ground'''
     def cancel_const_forces(self, forces = Constant_Force()):
@@ -115,24 +120,7 @@ class Velocity_Processor(e.Processor):
         
         #if sum of forces not 0, then add a force that equals 0
         if force_sum != 0.0:
-            forces.forces.append(Vector2(0, -force_sum))
-
-    def remove_cancel_forces(self, forces = []):
-
-        #force to remove is y, and y - all other forces = 0
-        for force in forces:
-
-            #get sum of forces, excluding current force
-            sum_forces = 0.0
-            for other_force in forces:
-                if other_force == force: continue
-
-                sum_forces += other_force.y
-
-            #if is force from ground, then remove it
-            if force.y - sum_forces == 0:
-                forces.remove(force)
-                return
+            forces.reaction_forces = Vector2(0, -force_sum)
 
 
 
@@ -141,18 +129,24 @@ class Velocity_Processor(e.Processor):
         #go through all entities w/ pos, veloc, and collider
         for ent, (pos, veloc, collider, forces, collided) in gb.entity_world.get_components(Position, Velocity, Collider, Constant_Force, Collided_Prev_Frame):
 
+            #skip if velocity is 0
+
             #set new position
             pos.vector += veloc.vector * gb.delta_time
 
             #check if there is a colliding collider
-            if colliding_colliders := self.collider_is_colliding(pos, collider, ent):
+            if (colliding_collider_data := self.collider_is_colliding(pos, collider, ent)) != None:
 
-                #set new pos by colliding, rember to do either vertical or horizontal first
-                self.set_collider_pos(pos.vector, collider, forces, colliding_colliders)
+                #set pos and get side it collides with
+                collide_side = self.set_post_collision_pos(pos.vector, collider, colliding_collider_data[0], colliding_collider_data[1].vector)
 
-                #create cancel force if wasnt colliding last frame
+                #create cancel force and set veloc to 0 if wasnt colliding last frame
                 if not collided.collided:
                     self.cancel_const_forces(forces)
+                    if collide_side:
+                        veloc.vector.y = 0
+                    else:
+                        veloc.vector.x = 0
 
                 #set collided last frame
                 collided.collided = True
@@ -162,6 +156,6 @@ class Velocity_Processor(e.Processor):
                 
                 #if collided last frame then remove ground force
                 if collided.collided:
-                    self.remove_cancel_forces(forces.forces)
+                    forces.reaction_forces = Vector2()
 
                 collided.collided = False

@@ -30,7 +30,7 @@ falling_box = gb.entity_world.create_entity(
     Velocity(),
     input_manager.Input_Direction(),
     render_manager.Camera_Follow(),
-    physics.Constant_Force([Vector2(0,-2)]),
+    physics.Constant_Force([Vector2(0,-9.8)]),
     physics.Mass(),
     physics.Collided_Prev_Frame()
 )
@@ -51,9 +51,8 @@ while not gb.game_done:
 
     gb.delta_time = delta_time_clock.tick(60) / 1000.0
 
-    pos = gb.entity_world.component_for_entity(falling_box, Position)
     input_dir = gb.entity_world.component_for_entity(falling_box, Input_Direction)
     if input_dir.input_direction.x == 1:
-        pos.vector.y = 3
+        gb.entity_world.add_component(falling_box, physics.Impulse_Force(Vector2(0,1)))
 
     gb.entity_world.process()
