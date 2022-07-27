@@ -56,5 +56,7 @@ while not gb.game_done:
     input_dir = gb.entity_world.component_for_entity(falling_box, Input_Direction)
     if input_dir.input_direction != Vector2():
         gb.entity_world.add_component(falling_box, physics.Impulse_Force(input_dir.input_direction))
+    if input_manager.scroll_delta != 0:
+        render_manager.set_camera_zoom(input_manager.scroll_delta + render_manager.camera_zoom)
 
     gb.entity_world.process()

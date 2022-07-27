@@ -8,10 +8,21 @@ import core_classes as core
 
 
 #width of the camera veiw in WU (world units)
-camera_zoom = 10
-camera_width = camera_zoom
-camera_height = camera_width / gb.SCREEN_WIDTH_TO_HEIGHT_RATIO
-camera_position = core.Vector2()
+def set_camera_zoom(zoom = 10.0):
+    if zoom < 10.0: zoom = 10.0
+
+    global _camera_width
+    global _camera_height
+    global camera_zoom
+
+    camera_zoom = zoom
+    _camera_width = zoom
+    _camera_height = zoom / gb.SCREEN_WIDTH_TO_HEIGHT_RATIO
+
+_camera_width = 10.0
+camera_zoom = _camera_width
+_camera_height = _camera_width / gb.SCREEN_WIDTH_TO_HEIGHT_RATIO
+_camera_position = core.Vector2()
 #background color, when nothing is being rendered
 background_color = (255,255,255)
 
@@ -38,7 +49,7 @@ class Camera_Follow:
 class Follow_Camera_Processor(e.Processor):
 
     def process(self):
-        global camera_position
+        global _camera_position
 
         camera_followers = gb.entity_world.get_components(Camera_Follow, Position)
 
@@ -46,21 +57,22 @@ class Follow_Camera_Processor(e.Processor):
         if(len(camera_followers) > 0):
             ent, (camera_follow, pos) = camera_followers[0]
 
-            camera_position = pos.vector - Vector2(10, gb.SCREEN_WIDTH_TO_HEIGHT_RATIO / 10) * 0.5
+            _camera_position = pos.vector - Vector2(10, gb.SCREEN_WIDTH_TO_HEIGHT_RATIO / 10) * 0.5
 
 
 class Render_Processor(e.Processor):
 
     def get_world_to_pix_ratio(self):
-        return gb.SCREEN_WIDTH / camera_zoom
+        global _camera_width
+        return gb.SCREEN_WIDTH / _camera_width
 
     def get_scaled_rect(self, unscaled_rect = Renderable_Rect(), world_to_pix = 0.0, pos = core.Position()):
 
-        global camera_position
+        global _camera_position
 
         #flip y cause pygame does top of screen is 0,0
-        left = (pos.vector.x - unscaled_rect.width / 2.0 - camera_position.x) * world_to_pix
-        top = gb.SCREEN_HEIGHT - ((pos.vector.y + unscaled_rect.height / 2.0 - camera_position.y + camera_height / 2.0) * world_to_pix)
+        left = (pos.vector.x - unscaled_rect.width / 2.0 - _camera_position.x - _camera_width / 4.0) * world_to_pix
+        top = gb.SCREEN_HEIGHT - ((pos.vector.y + unscaled_rect.height / 2.0 - _camera_position.y + _camera_height / 2.0) * world_to_pix)
 
         return py.Rect(
             left, top,

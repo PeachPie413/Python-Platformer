@@ -44,14 +44,16 @@ class Input_Direction_Processor(e.Processor):
         global input_dir
         global scroll_delta
 
+        scroll_delta = 0
         for input_event in py.event.get():
 
             if input_event.type == py.QUIT:
                 gb.game_done = True
 
-            if input_event.type == py.MOUSEBUTTONDOWN:
-                if input_event.button == 4: scroll_delta = min(scroll_delta + 15, 0)
-                if input_event.button == 5: scroll_delta = max(scroll_delta - 15, -300)
+            if input_event.type == py.MOUSEWHEEL:
+                scroll_delta = input_event.y
+            else:
+                scroll_delta = 0
 
         #key press stuff
         keys = py.key.get_pressed()
@@ -89,7 +91,6 @@ class Input_Direction_Processor(e.Processor):
 
         for ent, scroll in gb.entity_world.get_component(Scroll_Amount):
             scroll.delta = scroll_delta
-            print(str(scroll_delta))
 
 
     def process(self):
