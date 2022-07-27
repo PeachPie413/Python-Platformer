@@ -18,7 +18,7 @@ render_manager.create_game_window()
 #add processors to the world
 gb.entity_world.add_processor(render_manager.Render_Processor(), -99)
 gb.entity_world.add_processor(render_manager.Follow_Camera_Processor())
-gb.entity_world.add_processor(input_manager.Input_Processor())
+gb.entity_world.add_processor(input_manager.Input_Direction_Processor())
 gb.entity_world.add_processor(physics.Forces_Processor(), 98)
 gb.entity_world.add_processor(physics.Velocity_Processor(), 99)
 
@@ -32,7 +32,9 @@ falling_box = gb.entity_world.create_entity(
     render_manager.Camera_Follow(),
     physics.Constant_Force([Vector2(0,-9.8)]),
     physics.Mass(),
-    physics.Collided_Prev_Frame()
+    physics.Collided_Prev_Frame(),
+    physics.Friction(10),
+    input_manager.Scroll_Amount()
 )
 platform = gb.entity_world.create_entity(
     Position(Vector2(0,-3)),
@@ -52,7 +54,7 @@ while not gb.game_done:
     gb.delta_time = delta_time_clock.tick(60) / 1000.0
 
     input_dir = gb.entity_world.component_for_entity(falling_box, Input_Direction)
-    if input_dir.input_direction.x == 1:
-        gb.entity_world.add_component(falling_box, physics.Impulse_Force(Vector2(0,1)))
+    if input_dir.input_direction != Vector2():
+        gb.entity_world.add_component(falling_box, physics.Impulse_Force(input_dir.input_direction))
 
     gb.entity_world.process()

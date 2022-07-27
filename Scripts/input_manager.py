@@ -17,6 +17,7 @@ left_key = py.K_a
 
 #input datas
 input_dir = core.Vector2()
+scroll_delta = 0.0
 
 
 class Input_Direction():
@@ -25,9 +26,13 @@ class Input_Direction():
         self.input_direction = input_dir
 
 
+class Scroll_Amount():
+    def __init__(self) -> None:
+        self.delta = 0.0
 
 
-class Input_Processor(e.Processor):
+
+class Input_Direction_Processor(e.Processor):
 
     def set_input_variables(self):
 
@@ -37,11 +42,16 @@ class Input_Processor(e.Processor):
         global right_key
 
         global input_dir
+        global scroll_delta
 
         for input_event in py.event.get():
 
             if input_event.type == py.QUIT:
                 gb.game_done = True
+
+            if input_event.type == py.MOUSEBUTTONDOWN:
+                if input_event.button == 4: scroll_delta = min(scroll_delta + 15, 0)
+                if input_event.button == 5: scroll_delta = max(scroll_delta - 15, -300)
 
         #key press stuff
         keys = py.key.get_pressed()
@@ -58,18 +68,28 @@ class Input_Processor(e.Processor):
         else:
             input_dir.x = 0
 
-
         #normailize input dir
         if abs(input_dir.x) == 1.0 and abs(input_dir.y) == 1.0:
-            input_dir *= 0.7  
+            input_dir *= 0.7 
 
 
-    def set_input_components(self):
+
+
+    def set_input_dir(self):
 
         global input_dir
 
         for ent, input_dir_component in gb.entity_world.get_component(Input_Direction):
             input_dir_component.input_direction = input_dir
+
+
+    def set_scroll_delta(self):
+
+        global scroll_delta
+
+        for ent, scroll in gb.entity_world.get_component(Scroll_Amount):
+            scroll.delta = scroll_delta
+            print(str(scroll_delta))
 
 
     def process(self):
@@ -78,5 +98,5 @@ class Input_Processor(e.Processor):
 
         self.set_input_variables()
 
-        self.set_input_components()
+        self.set_input_dir()
 

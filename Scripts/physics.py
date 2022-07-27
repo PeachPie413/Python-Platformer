@@ -31,6 +31,10 @@ class Mass:
 class Collided_Prev_Frame:
     def __init__(self) -> None:
         self.collided = False
+
+class Friction:
+    def __init__(self, mu = 0.0) -> None:
+        self.mu = mu
         
 
 
@@ -123,13 +127,19 @@ class Velocity_Processor(e.Processor):
             forces.reaction_forces = Vector2(0, -force_sum)
 
 
+    '''apply friction to an object on the horizontal axis'''
+    def apply_friction(self, veloc, mu):
+        veloc.x -= mu * veloc.x * gb.delta_time
+
+
 
     def process(self):
 
         #go through all entities w/ pos, veloc, and collider
-        for ent, (pos, veloc, collider, forces, collided) in gb.entity_world.get_components(Position, Velocity, Collider, Constant_Force, Collided_Prev_Frame):
+        for ent, (pos, veloc, collider, forces, collided, friction) in gb.entity_world.get_components(Position, Velocity, Collider, Constant_Force, Collided_Prev_Frame, Friction):
 
             #skip if velocity is 0
+            if(veloc.vector == Vector2()): continue
 
             #set new position
             pos.vector += veloc.vector * gb.delta_time
@@ -139,6 +149,10 @@ class Velocity_Processor(e.Processor):
 
                 #set pos and get side it collides with
                 collide_side = self.set_post_collision_pos(pos.vector, collider, colliding_collider_data[0], colliding_collider_data[1].vector)
+
+                #apply friction, if collision on x axis
+                if collide_side:
+                    self.apply_friction(veloc.vector, friction.mu)
 
                 #create cancel force and set veloc to 0 if wasnt colliding last frame
                 if not collided.collided:
