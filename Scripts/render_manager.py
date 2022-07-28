@@ -4,6 +4,7 @@ from dataclasses import dataclass
 import pygame as py
 import esper as e
 import core_classes as core
+import resources
 
 
 
@@ -106,5 +107,7 @@ class Render_Processor(e.Processor):
         scaled_renderables = self.get_scaled_renderables(world_to_pix)
 
         self.draw_renderables(scaled_renderables)
+
+        gb.game_window.blit(resources.sprite_list[0], (50,50))
 
         py.display.update()

@@ -11,10 +11,13 @@ import physics
 import pygame as py
 import core_classes as core
 import character_controller
+import resources
 
 py.init()
 
 render_manager.create_game_window()
+
+resources.load_assets()
 
 #add processors to the world
 #rendering
