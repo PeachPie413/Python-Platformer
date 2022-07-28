@@ -10,20 +10,26 @@ import input_manager
 import physics
 import pygame as py
 import core_classes as core
+import character_controller
 
 py.init()
 
 render_manager.create_game_window()
 
 #add processors to the world
+#rendering
 gb.entity_world.add_processor(render_manager.Render_Processor(), -99)
-gb.entity_world.add_processor(render_manager.Follow_Camera_Processor())
-gb.entity_world.add_processor(input_manager.Input_Direction_Processor())
+gb.entity_world.add_processor(render_manager.Follow_Camera_Processor(), -98)
+#input
+gb.entity_world.add_processor(input_manager.Input_Direction_Processor(), 89)
+#player movement
+gb.entity_world.add_processor(character_controller.Character_Controller_Processor())
+#physics
 gb.entity_world.add_processor(physics.Forces_Processor(), 98)
 gb.entity_world.add_processor(physics.Velocity_Processor(), 99)
 
 #create player entity
-falling_box = gb.entity_world.create_entity(
+player = gb.entity_world.create_entity(
     Position(Vector2(0,3)),
     Collider(1,1),
     render_manager.Renderable_Rect(),
@@ -33,13 +39,13 @@ falling_box = gb.entity_world.create_entity(
     physics.Constant_Force([Vector2(0,-9.8)]),
     physics.Mass(),
     physics.Collided_Prev_Frame(),
-    physics.Friction(10),
+    physics.Friction(character_controller.PLAYER_GROUND_FRICTION, character_controller.PLAYER_AIR_FRICTION),
     input_manager.Scroll_Amount()
 )
 platform = gb.entity_world.create_entity(
     Position(Vector2(0,-3)),
-    Collider(6,1),
-    render_manager.Renderable_Rect((0,0,0), 6, 1)
+    Collider(60,1),
+    render_manager.Renderable_Rect((0,0,0), 60, 1)
 )
 # camera = gb.entity_world.create_entity(
 #     input_manager.Input_Direction(),
@@ -53,10 +59,7 @@ while not gb.game_done:
 
     gb.delta_time = delta_time_clock.tick(60) / 1000.0
 
-    input_dir = gb.entity_world.component_for_entity(falling_box, Input_Direction)
-    if input_dir.input_direction != Vector2():
-        gb.entity_world.add_component(falling_box, physics.Impulse_Force(input_dir.input_direction))
     if input_manager.scroll_delta != 0:
-        render_manager.set_camera_zoom(input_manager.scroll_delta + render_manager.camera_zoom)
+        render_manager.set_camera_zoom(render_manager.camera_zoom + input_manager.scroll_delta)
 
     gb.entity_world.process()

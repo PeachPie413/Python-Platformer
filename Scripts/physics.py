@@ -31,10 +31,12 @@ class Mass:
 class Collided_Prev_Frame:
     def __init__(self) -> None:
         self.collided = False
+        self.collision_side = Vector2()
 
 class Friction:
-    def __init__(self, mu = 0.0) -> None:
-        self.mu = mu
+    def __init__(self, ground_mu = 0.0, air_mu = 0.0) -> None:
+        self.ground_mu = ground_mu
+        self.air_mu = air_mu
         
 
 
@@ -96,23 +98,31 @@ class Velocity_Processor(e.Processor):
         return None
             
 
-    '''set pos of collider given the collider it colides with. Returns side it collided with, false is x, true is y'''
+    '''set pos of collider given the collider it colides with. Returns side it collided with using a vec2'''
     def set_post_collision_pos(self, pos = Vector2(), collider = Collider(), colliding_collider = Collider(), colliding_pos = Vector2()):
 
         #get move amount for dimensions
         move_amount_x = (collider.width + colliding_collider.width) / 2.0 - abs(pos.x - colliding_pos.x)
         move_amount_y = (collider.height + colliding_collider.height) / 2.0 - abs(pos.y - colliding_pos.y)
 
-        #collision on width
+        #collision moving into vertical surface
         if move_amount_x < move_amount_y:
+
             #get amount to move on x axis
-            pos.x += math.copysign(move_amount_x, pos.x - colliding_pos.x)
-            return False
-        #collision on height
+            delta_pos = math.copysign(move_amount_x, pos.x - colliding_pos.x)
+            pos.x += delta_pos
+            
+            #return collision side
+            return Vector2(math.copysign(1, delta_pos), 0)
+
+        #collision moving into horizontal surface
         else:
             #get amount to move on y axis
-            pos.y += math.copysign(move_amount_y, pos.y - colliding_pos.y)
-            return True
+            delta_pos = math.copysign(move_amount_y, pos.y - colliding_pos.y)
+            pos.y += delta_pos
+
+            #return collision side
+            return Vector2(0, math.copysign(1, delta_pos))
 
 
     '''set the forces on an object to equal 0 on the y axis when it is colliding with the ground'''
@@ -151,25 +161,32 @@ class Velocity_Processor(e.Processor):
                 collide_side = self.set_post_collision_pos(pos.vector, collider, colliding_collider_data[0], colliding_collider_data[1].vector)
 
                 #apply friction, if collision on x axis
-                if collide_side:
-                    self.apply_friction(veloc.vector, friction.mu)
+                if collide_side.y == 1 or collide_side.y == -1:
+                    self.apply_friction(veloc.vector, friction.ground_mu)
 
-                #create cancel force and set veloc to 0 if wasnt colliding last frame
-                if not collided.collided:
-                    self.cancel_const_forces(forces)
+                #create cancel force and set veloc to 0 if wasnt colliding last frame and collided with floor
+                if not collided.collision_side == Vector2():
+                    if collide_side.y == 1:
+                        self.cancel_const_forces(forces)
+
+                    
                     if collide_side:
                         veloc.vector.y = 0
                     else:
                         veloc.vector.x = 0
 
                 #set collided last frame
-                collided.collided = True
+                collided.collision_side = collide_side
 
             #else did not collide this frame
             else:
                 
+                #apply friction
+                self.apply_friction(veloc.vector, friction.air_mu)
+
                 #if collided last frame then remove ground force
-                if collided.collided:
+                if collided.collision_side == Vector2():
                     forces.reaction_forces = Vector2()
 
-                collided.collided = False
+                #say no longer collided
+                collided.collision_side = Vector2()
