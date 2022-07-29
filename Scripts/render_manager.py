@@ -41,6 +41,10 @@ class Renderable_Rect:
         self.width = width
         self.height = height
 
+class Sprite:
+    def __init__(self) -> None:
+        pass
+
 class Camera_Follow:
     def __init__(self) -> None:
         pass

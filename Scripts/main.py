@@ -1,4 +1,3 @@
-from turtle import position
 from input_manager import Input_Direction
 from render_manager import Camera_Follow
 from core_classes import Vector2
