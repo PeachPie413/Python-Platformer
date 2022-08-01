@@ -44,3 +44,24 @@ class Vector2():
 class Position():
     def __init__(self, vector = Vector2(0,0)):
         self.vector = vector
+
+
+
+class Grid():
+    def __init__(self, width = 3, height = 3) -> None:
+        self.width = width
+        self.height = height
+        self.data = []
+        #fill data with None
+        for i in range(width * height):
+            self.data.append(None)
+
+
+    '''get the linear pos from xy coords'''
+    def xy_to_linear(self, x = 0, y = 0):
+        pass
+
+
+    '''set a cell in the grid using x,y coordinates. not passing any data to set automatically sets no data'''
+    def set_cell(self, x = 0, y = 0, data = None):
+        pass

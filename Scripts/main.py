@@ -1,3 +1,4 @@
+from core_classes import *
 from input_manager import Input_Direction
 from render_manager import Camera_Follow
 from core_classes import Vector2
@@ -16,6 +17,9 @@ py.init()
 
 resources.load_assets()
 render_manager.init()
+
+grid = Grid()
+print(grid.data)
 
 #add processors to the world
 #rendering
