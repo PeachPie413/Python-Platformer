@@ -19,7 +19,8 @@ resources.load_assets()
 render_manager.init()
 
 grid = Grid()
-print(grid.data)
+grid.set_cell(2,1, True)
+print(grid.get_cell(2,1))
 
 #add processors to the world
 #rendering

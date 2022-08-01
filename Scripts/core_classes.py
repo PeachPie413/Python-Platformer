@@ -1,3 +1,7 @@
+from math import floor
+from tkinter.messagebox import NO
+
+
 class Vector2():
     def __init__(self, x = 0.0, y = 0.0) -> None:
         self.x = x
@@ -57,11 +61,43 @@ class Grid():
             self.data.append(None)
 
 
-    '''get the linear pos from xy coords'''
+    '''get the linear pos from xy coords, returns None if out of bounds'''
     def xy_to_linear(self, x = 0, y = 0):
-        pass
+        linear_pos = x + (y * self.height)
+
+        if linear_pos >= len(self.data):
+            return None
+        else:
+            return linear_pos
+
+
+    '''get the xy coords from a linear pos as an (x,y) tuple, returns none if out of bounds'''
+    def linear_to_xy(self, n = 0):
+        x = n % self.width
+        y = floor(n / self.width)
+
+        if x >= self.width or y >= self.height:
+            return None
+        else:
+            return (x,y)
 
 
     '''set a cell in the grid using x,y coordinates. not passing any data to set automatically sets no data'''
-    def set_cell(self, x = 0, y = 0, data = None):
-        pass
+    def set_cell(self, x = 0, y = 0, cell_data = None):
+        #linear pos
+        linear_pos = self.xy_to_linear(x,y)
+
+        #return False if out of bounds
+        if linear_pos == None:
+            return False
+        else:
+            self.data[linear_pos] = cell_data
+
+    '''get the data from a cell in the grid, returns none if out of bounds'''
+    def get_cell(self, x = 0, y = 0):
+
+        #get linear pos, return False if out of bounds
+        if (linear_pos := self.xy_to_linear(x,y)) == None:
+            return False
+        else:
+            return self.data[linear_pos]
