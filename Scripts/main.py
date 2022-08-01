@@ -14,9 +14,8 @@ import resources
 
 py.init()
 
-render_manager.create_game_window()
-
 resources.load_assets()
+render_manager.init()
 
 #add processors to the world
 #rendering
@@ -34,7 +33,7 @@ gb.entity_world.add_processor(physics.Velocity_Processor(), 99)
 player = gb.entity_world.create_entity(
     Position(Vector2(0,3)),
     Collider(1,1),
-    render_manager.Renderable_Rect(),
+    render_manager.Sprite(0),
     Velocity(),
     input_manager.Input_Direction(),
     render_manager.Camera_Follow(),

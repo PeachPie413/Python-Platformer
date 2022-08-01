@@ -6,7 +6,9 @@ import esper as e
 import core_classes as core
 import resources
 
-
+def init():
+    set_camera_zoom()
+    create_game_window()
 
 #width of the camera veiw in WU (world units)
 def set_camera_zoom(zoom = 10.0):
@@ -149,7 +151,10 @@ class Render_Processor(e.Processor):
         self.draw_rects(scaled_rects)
 
 
-    #sprite rendering
+
+
+
+    #SPRITE RENDERING
     def get_sprites(self):
         sprites = []
 
@@ -159,17 +164,24 @@ class Render_Processor(e.Processor):
 
         return sprites
 
+
     '''take the sprites' world pos and turn it into a screen pos'''
     def scale_sprites(self, sprites, world_to_pix):
         
+        global sprite_pix_to_world_scale
+
         index = 0
         for (pos, sprite_id) in sprites:
 
-            scaled_pos = pos * world_to_pix
+            sprite_metadata = resources.sprite_metadata_list[sprite_id]
+            scaled_pos = world_to_pixel(Vector2(pos.x - sprite_metadata.size.x / 2.0 / sprite_pix_to_world_scale, pos.y + sprite_metadata.size.y / 2.0 / sprite_pix_to_world_scale), world_to_pix)
 
             sprites[index] = (scaled_pos, sprite_id)
 
             index += 1
+
+        return sprites
+
 
     '''draw the scaled sprites to the screen'''
     def draw_sprites(self, sprites):
@@ -180,6 +192,7 @@ class Render_Processor(e.Processor):
 
             gb.game_window.blit(scaled_sprites[sprite_id], (pos.x, pos.y))
 
+
     def render_sprites(self, world_to_pix):
         sprites = self.get_sprites()
 
@@ -187,10 +200,12 @@ class Render_Processor(e.Processor):
 
         self.draw_sprites(sprites)
 
+
+
+
+
+
     def process(self):
-        
-        scale_sprites()
-        global scaled_sprites
 
         gb.game_window.fill(background_color)
 
@@ -198,8 +213,6 @@ class Render_Processor(e.Processor):
 
         self.render_rects(world_to_pix)
 
-        #self.render_sprites(world_to_pix)
-
-        gb.game_window.blit(scaled_sprites[0], (50,50))
+        self.render_sprites(world_to_pix)
 
         py.display.update()
