@@ -185,7 +185,7 @@ class Velocity_Processor(e.Processor):
                 self.apply_friction(veloc.vector, friction.air_mu)
 
                 #if collided last frame then remove ground force
-                if collided.collision_side == Vector2():
+                if collided.collision_side != Vector2():
                     forces.reaction_forces = Vector2()
 
                 #say no longer collided

@@ -18,10 +18,6 @@ py.init()
 resources.load_assets()
 render_manager.init()
 
-grid = Grid()
-grid.set_cell(2,1, True)
-print(grid.get_cell(2,1))
-
 #add processors to the world
 #rendering
 gb.entity_world.add_processor(render_manager.Render_Processor(), -99)
@@ -35,29 +31,24 @@ gb.entity_world.add_processor(physics.Forces_Processor(), 98)
 gb.entity_world.add_processor(physics.Velocity_Processor(), 99)
 
 #create player entity
-player = gb.entity_world.create_entity(
-    Position(Vector2(0,3)),
-    Collider(1,1),
-    render_manager.Sprite(0),
-    Velocity(),
-    input_manager.Input_Direction(),
-    render_manager.Camera_Follow(),
-    physics.Constant_Force([Vector2(0,-9.8)]),
-    physics.Mass(),
-    physics.Collided_Prev_Frame(),
-    physics.Friction(character_controller.PLAYER_GROUND_FRICTION, character_controller.PLAYER_AIR_FRICTION),
-    input_manager.Scroll_Amount()
-)
-platform = gb.entity_world.create_entity(
-    Position(Vector2(0,-3)),
-    Collider(60,1),
-    render_manager.Renderable_Rect((0,0,0), 60, 1)
-)
-# camera = gb.entity_world.create_entity(
+# player = gb.entity_world.create_entity(
+#     Position(Vector2(0,3)),
+#     Collider(1,1),
+#     render_manager.Sprite(0),
+#     Velocity(),
 #     input_manager.Input_Direction(),
 #     render_manager.Camera_Follow(),
-#     Position()
+#     physics.Constant_Force([Vector2(0,-9.8)]),
+#     physics.Mass(),
+#     physics.Collided_Prev_Frame(),
+#     physics.Friction(character_controller.PLAYER_GROUND_FRICTION, character_controller.PLAYER_AIR_FRICTION),
+#     input_manager.Scroll_Amount()
 # )
+camera = gb.entity_world.create_entity(
+    input_manager.Input_Direction(),
+    render_manager.Camera_Follow(),
+    Position()
+)
 
 #main game loop
 delta_time_clock = py.time.Clock()

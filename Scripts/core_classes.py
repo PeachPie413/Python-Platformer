@@ -52,13 +52,13 @@ class Position():
 
 
 class Grid():
-    def __init__(self, width = 3, height = 3) -> None:
+    def __init__(self, width = 3, height = 3, fill_data = None) -> None:
         self.width = width
         self.height = height
         self.data = []
         #fill data with None
         for i in range(width * height):
-            self.data.append(None)
+            self.data.append(fill_data)
 
 
     '''get the linear pos from xy coords, returns None if out of bounds'''
