@@ -12,11 +12,14 @@ import pygame as py
 import core_classes as core
 import character_controller
 import resources
+import world_data
 
 py.init()
 
 resources.load_assets()
 render_manager.init()
+
+world_data.create_chunk()
 
 #add processors to the world
 #rendering
