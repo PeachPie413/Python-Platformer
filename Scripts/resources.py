@@ -16,10 +16,12 @@ sprite_list = []
 sprite_id_dict = {}
 #list of sprite data, ex width, height in a list so it can be quickyl read w/out loading the whole image
 sprite_metadata_list = []
+#dict of tile types, use tile type name to get data
+tile_type_dict = {}
 
 #load all sprites in the game
 def load_sprites():
-    file_list = os.listdir("Assets")
+    file_list = os.listdir("Assets/Sprites")
 
     #for each file in Assets
     current_id = 0
@@ -35,6 +37,12 @@ def load_sprites():
         sprite_id_dict[file_name] = current_id
 
         current_id += 1
+
+
+#load all tile types to a dict
+def load_tile_types():
+    pass
+    #use json to save tile types
 
 
 def load_assets():

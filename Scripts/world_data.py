@@ -1,5 +1,6 @@
 from core_classes import *
 import global_variables as gb
+import esper as e
 
 
 
@@ -9,30 +10,6 @@ CHUNK_CREATED_EVENT_NAME = 'chunk_loaded'
 CHUNK_DESTROYED_EVENT_NAME = 'chunk_destroyed'
 
 zone_dict = {}
-
-
-def create_chunk(chunk_pos = Vector2(), zone_id = 'overworld'):
-    global zone_dict
-
-    #check if zone is in dict
-    zone = None
-    if zone_id not in zone_dict:
-        zone = Zone(zone_id)
-        zone_dict[zone_id] = zone
-    #get zone
-    else:
-        zone = zone_dict[zone_id]
-
-    #if chunk not in zone then create it
-    if chunk_pos not in zone.chunks:
-        zone.chunks[chunk_pos] = _load_chunk(chunk_pos, zone_id)
-
-def destroy_chunk(chunk_pos = Vector2(), zone_id = 'overworld'):
-    pass
-
-
-def _load_chunk(chunk_pos = Vector2(), zone_id = 'overworld'):
-    return Chunk()
 
 
 
@@ -57,4 +34,57 @@ class Chunk:
 class Zone:
     def __init__(self, id = 'overworld') -> None:
         self.id = id
-        self.chunks = {}
+        self.chunks = {} # for key in chunks use tuple version of chunk pos
+
+
+
+
+def create_chunk(chunk_pos = Vector2(), zone_id = 'overworld'):
+    global zone_dict
+    global CHUNK_CREATED_EVENT_NAME
+
+    #check if zone is in dict
+    zone = None
+    if zone_id not in zone_dict:
+        zone = Zone(zone_id)
+        zone_dict[zone_id] = zone
+    #get zone
+    else:
+        zone = zone_dict[zone_id]
+
+    #if chunk not in zone then create it
+    if chunk_pos not in zone.chunks:
+        zone.chunks[chunk_pos.as_tuple()] = _load_chunk(chunk_pos, zone_id)
+
+        #raise event
+        e.dispatch_event(CHUNK_CREATED_EVENT_NAME, chunk_pos)
+
+def destroy_chunk(chunk_pos = Vector2(), zone_id = 'overworld'):
+    global zone_dict
+    global CHUNK_DESTROYED_EVENT_NAME
+
+    if zone_id in zone_dict:
+        zone = zone_dict[zone_id]
+
+        print(zone.chunks)
+        if chunk_pos.as_tuple() in zone.chunks:
+
+            #destroy chunk
+            _unload_chunk(zone.chunks[chunk_pos.as_tuple()], chunk_pos, zone_id)
+
+            #remove from dicts
+            del zone.chunks[chunk_pos.as_tuple()]
+
+            #dispatch event
+            e.dispatch_event(CHUNK_DESTROYED_EVENT_NAME, chunk_pos)
+
+
+
+
+
+def _load_chunk(chunk_pos = Vector2(), zone_id = 'overworld'):
+    return Chunk()
+
+
+def _unload_chunk(chunk = Chunk(), chunk_pos = Vector2(), zone_id = 'overworld'):
+    pass

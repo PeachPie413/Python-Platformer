@@ -19,7 +19,6 @@ py.init()
 resources.load_assets()
 render_manager.init()
 
-world_data.create_chunk()
 
 #add processors to the world
 #rendering

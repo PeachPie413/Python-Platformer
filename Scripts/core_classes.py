@@ -44,6 +44,9 @@ class Vector2():
         elif type(self) == Vector2:
             return Vector2(self.x / other.x, self.y / other.y)
 
+    def as_tuple(self):
+        return (self.x, self.y)
+
 
 class Position():
     def __init__(self, vector = Vector2(0,0)):
