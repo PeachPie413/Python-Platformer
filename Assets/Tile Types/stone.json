@@ -1,0 +1,5 @@
+{
+    "sprite" : "tile-stone",
+    "collides" : true,
+    "id_name" : "stone"
+}
