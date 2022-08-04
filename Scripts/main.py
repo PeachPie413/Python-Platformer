@@ -13,12 +13,12 @@ import core_classes as core
 import character_controller
 import resources
 import world_data
+import esper as e
 
 py.init()
 
 resources.load_assets()
 render_manager.init()
-
 
 #add processors to the world
 #rendering
@@ -46,6 +46,8 @@ gb.entity_world.add_processor(physics.Velocity_Processor(), 99)
 #     physics.Friction(character_controller.PLAYER_GROUND_FRICTION, character_controller.PLAYER_AIR_FRICTION),
 #     input_manager.Scroll_Amount()
 # )
+
+#camera that moves w/ keyboard input
 camera = gb.entity_world.create_entity(
     input_manager.Input_Direction(),
     render_manager.Camera_Follow(),

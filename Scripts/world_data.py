@@ -29,15 +29,36 @@ class Chunk:
         global CHUNK_SIZE
 
         self.tile_data = Grid(CHUNK_SIZE, CHUNK_SIZE)
-        self.pos = chunk_pos
+        self.chunk_pos = chunk_pos
+
+
+    def _world_to_local_pos(self, world_pos):
+        chunk_world_pos = chunk_pos_to_world(self.chunk_pos)
+
+        #convert to local tile pos
+        return Vector2(floor(world_pos.x - chunk_world_pos.x), floor(world_pos.y - chunk_world_pos.y))
 
     
     def get_tile(self, world_pos):
-        pass
+
+        local_tile_pos = self._world_to_local_pos(world_pos)       
+
+        return self.tile_data.get_cell(local_tile_pos.x, local_tile_pos.y)
 
 
-    def set_tile(self, world_pos):
-        pass
+    def set_tile(self, world_pos, new_tile):
+        global CHUNK_CHANGED_EVENT_NAME
+
+        #change tile
+        local_tile_pos = self._world_to_local_pos(world_pos)
+        tile = self.tile_data.get_cell(local_tile_pos.x, local_tile_pos.y)
+
+        #if tile is in grid
+        if tile != None:
+            tile = new_tile
+
+            #raise event
+            e.dispatch_event(CHUNK_CHANGED_EVENT_NAME, self.chunk_pos, local_tile_pos)
 
 
 
@@ -50,7 +71,17 @@ class Zone:
 
 
 
-def world_pos_to_chunk
+def world_pos_to_chunk(world_pos):
+    global CHUNK_SIZE
+
+    return Vector2(floor(world_pos.x / CHUNK_SIZE), floor(world_pos.y / CHUNK_SIZE))
+
+
+def chunk_pos_to_world(chunk_pos):
+    global CHUNK_SIZE
+
+    return chunk_pos * CHUNK_SIZE
+
 
 
 
@@ -74,6 +105,7 @@ def create_chunk(chunk_pos = Vector2(), zone_id = 'overworld'):
         #raise event
         e.dispatch_event(CHUNK_CREATED_EVENT_NAME, chunk_pos)
 
+
 def destroy_chunk(chunk_pos = Vector2(), zone_id = 'overworld'):
     global zone_dict
     global CHUNK_DESTROYED_EVENT_NAME
@@ -81,7 +113,6 @@ def destroy_chunk(chunk_pos = Vector2(), zone_id = 'overworld'):
     if zone_id in zone_dict:
         zone = zone_dict[zone_id]
 
-        print(zone.chunks)
         if chunk_pos.as_tuple() in zone.chunks:
 
             #destroy chunk
