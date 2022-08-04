@@ -31,11 +31,26 @@ class Chunk:
         self.tile_data = Grid(CHUNK_SIZE, CHUNK_SIZE)
         self.pos = chunk_pos
 
+    
+    def get_tile(self, world_pos):
+        pass
+
+
+    def set_tile(self, world_pos):
+        pass
+
+
+
+
+
 class Zone:
     def __init__(self, id = 'overworld') -> None:
         self.id = id
         self.chunks = {} # for key in chunks use tuple version of chunk pos
 
+
+
+def world_pos_to_chunk
 
 
 
