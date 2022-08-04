@@ -62,8 +62,6 @@ class Chunk:
 
 
 
-
-
 class Zone:
     def __init__(self, id = 'overworld') -> None:
         self.id = id
@@ -71,18 +69,25 @@ class Zone:
 
 
 
-def world_pos_to_chunk(world_pos):
+def world_pos_to_chunk(world_pos = Vector2()):
     global CHUNK_SIZE
 
     return Vector2(floor(world_pos.x / CHUNK_SIZE), floor(world_pos.y / CHUNK_SIZE))
 
 
-def chunk_pos_to_world(chunk_pos):
+def chunk_pos_to_world(chunk_pos = Vector2()):
     global CHUNK_SIZE
 
     return chunk_pos * CHUNK_SIZE
 
 
+def get_chunk_from_chunk_pos(chunk_pos = Vector2(), zone_id = 'overworld'):
+    if zone_id in zone_dict:
+        zone = zone_dict[zone_id]
+        if chunk_pos.as_tuple() in zone.chunks:
+            return zone.chunks[chunk_pos.as_tuple()]
+
+    return None
 
 
 def create_chunk(chunk_pos = Vector2(), zone_id = 'overworld'):

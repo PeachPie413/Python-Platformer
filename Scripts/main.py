@@ -20,6 +20,8 @@ py.init()
 resources.load_assets()
 render_manager.init()
 
+world_data.create_chunk()
+
 #add processors to the world
 #rendering
 gb.entity_world.add_processor(render_manager.Render_Processor(), -99)

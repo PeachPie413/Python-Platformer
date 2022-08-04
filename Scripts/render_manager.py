@@ -5,6 +5,7 @@ import pygame as py
 import esper as e
 import core_classes as core
 import resources
+import world_data
 
 def init():
     set_camera_zoom()
@@ -17,6 +18,7 @@ def set_camera_zoom(zoom = 10.0):
     global _camera_width
     global _camera_height
     global camera_zoom
+    global world_to_pix
 
     camera_zoom = zoom
     _camera_width = zoom
@@ -24,6 +26,9 @@ def set_camera_zoom(zoom = 10.0):
 
     #rescale sprites
     scale_sprites()
+
+    #reset world to pix ratio
+    world_to_pix = gb.SCREEN_WIDTH / _camera_width
 
 
 _camera_width = 10.0
@@ -34,6 +39,8 @@ _camera_position = core.Vector2()
 background_color = (255,255,255)
 #scale for how many pixels in a sprite should be on unit long
 sprite_pix_to_world_scale = 8
+#scale for how many screen pixels are one unit in length for the world
+world_to_pix = 0
 '''func for getting pixel pos of a world pos'''
 def world_to_pixel(pos = core.Vector2(), world_to_pix = 0.0):
     screen_pos = Vector2()
@@ -205,6 +212,53 @@ class Render_Processor(e.Processor):
 
 
 
+    #render tilemaps
+    def render_chunks(self):
+        
+        chunks = self.get_chunks()
+
+        scaled_tiles = self.scale_tilemaps(chunks)
+
+        self.draw_tilemaps(scaled_tiles)
+
+
+    def get_chunks(self):
+        global _camera_position
+
+        #get chunks in the camera veiw
+        camera_chunk_pos = world_data.world_pos_to_chunk(_camera_position)
+        chunk_positions = []
+        for x in range(camera_chunk_pos.x - 1, camera_chunk_pos.x +2):
+            for y in range(camera_chunk_pos.y - 1, camera_chunk_pos.y +2):
+                chunk_positions.append(Vector2(x,y))
+
+        #get chunks
+        chunks = []
+        for chunk_pos in chunk_positions:
+            chunk = world_data.get_chunk_from_chunk_pos(chunk_pos)
+
+            if chunk is not None:
+                chunks.append(chunk)
+
+        return chunks
+
+
+
+    def scale_tilemaps(self, unscaled_chunks):
+        pass
+
+
+    def draw_tilemaps(self, chunks):
+        global world_to_pix
+
+        for chunk in chunks:
+            
+
+
+
+
+
+
     def process(self):
 
         gb.game_window.fill(background_color)
@@ -212,6 +266,8 @@ class Render_Processor(e.Processor):
         world_to_pix = self.get_world_to_pix_ratio()
 
         self.render_rects(world_to_pix)
+
+        self.render_chunks()
 
         self.render_sprites(world_to_pix)
 
