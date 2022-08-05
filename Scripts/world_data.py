@@ -1,6 +1,7 @@
 from core_classes import *
 import global_variables as gb
 import esper as e
+import resources
 
 
 
@@ -28,7 +29,7 @@ class Chunk:
     def __init__(self, chunk_pos = Vector2()) -> None:
         global CHUNK_SIZE
 
-        self.tile_data = Grid(CHUNK_SIZE, CHUNK_SIZE)
+        self.tile_data = Grid(CHUNK_SIZE, CHUNK_SIZE, Tile(resources.tile_type_dict['stone']))
         self.chunk_pos = chunk_pos
 
 

@@ -18,7 +18,7 @@ def set_camera_zoom(zoom = 10.0):
     global _camera_width
     global _camera_height
     global camera_zoom
-    global world_to_pix
+    global world_to_pix_ratio
 
     camera_zoom = zoom
     _camera_width = zoom
@@ -28,7 +28,7 @@ def set_camera_zoom(zoom = 10.0):
     scale_sprites()
 
     #reset world to pix ratio
-    world_to_pix = gb.SCREEN_WIDTH / _camera_width
+    world_to_pix_ratio = gb.SCREEN_WIDTH / _camera_width
 
 
 _camera_width = 10.0
@@ -40,7 +40,7 @@ background_color = (255,255,255)
 #scale for how many pixels in a sprite should be on unit long
 sprite_pix_to_world_scale = 8
 #scale for how many screen pixels are one unit in length for the world
-world_to_pix = 0
+world_to_pix_ratio = 0
 '''func for getting pixel pos of a world pos'''
 def world_to_pixel(pos = core.Vector2(), world_to_pix = 0.0):
     screen_pos = Vector2()
@@ -217,9 +217,9 @@ class Render_Processor(e.Processor):
         
         chunks = self.get_chunks()
 
-        scaled_tiles = self.scale_tilemaps(chunks)
+        #scaled_tiles = self.scale_tilemaps(chunks)
 
-        self.draw_tilemaps(scaled_tiles)
+        self.draw_tilemaps(chunks)
 
 
     def get_chunks(self):
@@ -249,10 +249,32 @@ class Render_Processor(e.Processor):
 
 
     def draw_tilemaps(self, chunks):
-        global world_to_pix
+        global world_to_pix_ratio
+        global scaled_sprites
 
+        
         for chunk in chunks:
-            
+            tiles = chunk.tile_data
+            chunk_world_pos = world_data.chunk_pos_to_world(chunk.chunk_pos)
+
+            #go through tiles in chunk
+            for i, tile in enumerate(tiles.data):
+
+                #skip if None
+                if tile is None:
+                    continue
+
+                #get screen pos
+                local_pos = tiles.linear_to_xy(i)
+                screen_pos = (local_pos + chunk_world_pos) * world_to_pix_ratio
+
+                #get spirte index
+                sprite_index = tile.tile_type.sprite
+
+                #draw to screen
+                gb.game_window.blit(scaled_sprites[sprite_index], screen_pos.as_tuple())
+
+
 
 
 
