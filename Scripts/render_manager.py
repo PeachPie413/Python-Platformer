@@ -4,8 +4,8 @@ from dataclasses import dataclass
 import pygame as py
 import esper as e
 import core_classes as core
-import resources
-import world_data
+import resources.globals as resources
+import world_data.world_data as world_data
 
 def init():
     set_camera_zoom()
@@ -266,7 +266,8 @@ class Render_Processor(e.Processor):
 
                 #get screen pos
                 local_pos = tiles.linear_to_xy(i)
-                screen_pos = (local_pos + chunk_world_pos) * world_to_pix_ratio
+                screen_pos = (local_pos + chunk_world_pos)
+                screen_pos *= world_to_pix_ratio
 
                 #get spirte index
                 sprite_index = tile.tile_type.sprite

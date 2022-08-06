@@ -11,8 +11,8 @@ import physics
 import pygame as py
 import core_classes as core
 import character_controller
-import resources
-import world_data
+import resources.resources as resources
+import world_data.world_data as world_data
 import esper as e
 
 py.init()
@@ -20,7 +20,9 @@ py.init()
 resources.load_assets()
 render_manager.init()
 
-world_data.create_chunk()
+tile = world_data.Tile(resources.tile_type_dict['stone'])
+chunk = world_data.create_chunk()
+chunk.tile_data = Grid(32,32,tile)
 
 #add processors to the world
 #rendering
@@ -53,6 +55,7 @@ gb.entity_world.add_processor(physics.Velocity_Processor(), 99)
 camera = gb.entity_world.create_entity(
     input_manager.Input_Direction(),
     render_manager.Camera_Follow(),
+
     Position()
 )
 
@@ -64,5 +67,9 @@ while not gb.game_done:
 
     if input_manager.scroll_delta != 0:
         render_manager.set_camera_zoom(render_manager.camera_zoom + input_manager.scroll_delta)
+
+    if input_manager.input_dir.as_tuple() != (0.0, 0.0):
+        for ent, (pos, cam_follow) in gb.entity_world.get_components(Position, render_manager.Camera_Follow):
+            pos.vector += Vector2(input_manager.input_dir.x * gb.delta_time * 10, input_manager.input_dir.y * gb.delta_time * 10)
 
     gb.entity_world.process()

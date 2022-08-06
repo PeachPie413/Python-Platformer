@@ -1,37 +1,26 @@
-from fileinput import filename
 import global_variables as gb
 from core_classes import *
 import pygame as py
 import os
-import world_data
+from world_data.world_data import Tile_Type
 import json
+from resources.globals import *
 
 
 class Sprite_Metadata:
     def __init__(self, size = Vector2()) -> None:
         self.size = size
 
-
-
-#list of all sprite files in the game
-sprite_list = []
-#dictionary of sprite file name to id
-sprite_id_dict = {}
-#list of sprite data, ex width, height in a list so it can be quickyl read w/out loading the whole image
-sprite_metadata_list = []
-#dict of tile types, use tile type name to get data
-tile_type_dict = {}
-
 #load all sprites in the game
 def load_sprites():
-    file_list = os.listdir("Assets/Sprites")
+    file_list = os.listdir(SPRITE_PATH)
 
     #for each file in Assets
     current_id = 0
     for file_name in file_list:
 
         #load image
-        sprite = py.image.load('Assets/Sprites/' + file_name)
+        sprite = py.image.load(SPRITE_PATH + '/' + file_name)
 
         #add to lists
         sprite_list.append(sprite)
@@ -48,12 +37,12 @@ def load_tile_types():
     global tile_type_dict
     global sprite_id_dict
 
-    file_list = os.listdir('Assets/Tile Types')
+    file_list = os.listdir(TILE_TYPE_PATH)
 
     #go through all tile types
     for file_name in file_list:
         #open file
-        with open('Assets/Tile Types/' + file_name, 'r') as f_stream:
+        with open(TILE_TYPE_PATH + '/' + file_name, 'r') as f_stream:
 
             contents = f_stream.read()
 
@@ -61,7 +50,7 @@ def load_tile_types():
             json_dict = json.loads(contents)
 
             #create tile type and fil lit's data
-            tile_type = world_data.Tile_Type()
+            tile_type = Tile_Type()
             tile_type.sprite = sprite_id_dict[json_dict['sprite']]
             tile_type.collides = json_dict['collides']
             tile_type.id_name = json_dict['id_name']

@@ -1,5 +1,4 @@
 from math import floor
-from tkinter.messagebox import NO
 
 
 class Vector2():
@@ -12,12 +11,16 @@ class Vector2():
             return Vector2(self.x + other, self.y + other)
         elif type(other) == Vector2:
             return Vector2(self.x + other.x, self.y + other.y)
+        elif type(other) == tuple:
+            return Vector2(self.x + other[0], self.y + other[1])
 
     def __radd__(other, self):
         if type(self) == float or type(self) == int:
             return Vector2(self.x + other, self.y + other)
         elif type(self) == Vector2:
             return Vector2(self.x + other.x, self.y + other.y)
+        elif type(self) == tuple:
+            return Vector2(other.x + self[0], other.y + self[1])
 
     def __sub__(self, other):
         if type(other) == float:
@@ -29,7 +32,7 @@ class Vector2():
         return Vector2(self.x - other.x, self.y - other.y)
 
     def __mul__(self, other):
-        if type(other) == float:
+        if type(other) == float or type(other) == int:
             return Vector2(self.x * other, self.y * other)
 
     def __truediv__(self, other):
