@@ -1,11 +1,11 @@
 from core_classes import *
 from input_manager import Input_Direction
-from render_manager import Camera_Follow
+from rendering.rendering import Camera_Follow
 from core_classes import Vector2
 from physics import Collider, Velocity
 from core_classes import Position
 import global_variables as gb
-import render_manager
+import rendering.rendering as render_manager
 import input_manager
 import physics
 import pygame as py
@@ -22,7 +22,7 @@ render_manager.init()
 
 tile = world_data.Tile(resources.tile_type_dict['stone'])
 chunk = world_data.create_chunk()
-chunk.tile_data = Grid(2,2,tile)
+chunk.tile_data = Grid(world_data.CHUNK_SIZE, world_data.CHUNK_SIZE, tile)
 
 #add processors to the world
 #rendering
@@ -67,7 +67,6 @@ while not gb.game_done:
 
     if input_manager.scroll_delta != 0:
         render_manager.set_camera_zoom(render_manager.camera_zoom + input_manager.scroll_delta)
-        print(render_manager.camera_zoom)
 
     if input_manager.input_dir.as_tuple() != (0.0, 0.0):
         for ent, (pos, cam_follow) in gb.entity_world.get_components(Position, render_manager.Camera_Follow):

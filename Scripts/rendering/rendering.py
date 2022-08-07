@@ -1,4 +1,5 @@
 from core_classes import *
+from rendering.globals import *
 import global_variables as gb
 from dataclasses import dataclass
 import pygame as py
@@ -48,8 +49,8 @@ def world_to_pixel(pos = core.Vector2()):
     global world_to_pix_ratio
 
     screen_pos = Vector2()
-    screen_pos.x = math.ceil((pos.x - _camera_position.x + _camera_width / 2.0) * world_to_pix_ratio)
-    screen_pos.y = math.ceil(gb.SCREEN_HEIGHT - ((pos.y - _camera_position.y + _camera_height / 2.0) * world_to_pix_ratio))
+    screen_pos.x = (pos.x - _camera_position.x + _camera_width / 2.0) * world_to_pix_ratio
+    screen_pos.y = (gb.SCREEN_HEIGHT - ((pos.y - _camera_position.y + _camera_height / 2.0) * world_to_pix_ratio))
     return screen_pos
 
 #list filled with scaled sprites, in the same order as in resources
@@ -116,6 +117,69 @@ class Follow_Camera_Processor(e.Processor):
             _camera_position = pos.vector
 
 
+
+
+
+
+
+
+'''create the native screen, the one that is not sclaed to screen'''
+def set_native_screen():
+    global native_render_surface
+    global _camera_width
+    global _camera_height
+    global sprite_pix_to_world_scale
+    global background_color
+
+    native_render_surface = py.Surface(
+        (_camera_width * sprite_pix_to_world_scale, _camera_height * sprite_pix_to_world_scale)
+    )
+
+    native_render_surface.fill(background_color)
+
+'''take the native screen and scale it to the game window'''
+def scale_native_screen_to_window():
+    global native_render_surface
+
+    py.transform.scale(native_render_surface, (gb.SCREEN_WIDTH, gb.SCREEN_HEIGHT), gb.game_window)
+
+'''get the native screen pos of a world pos'''
+def _world_to_native_pos(world_pos = Vector2()):
+    global _camera_position
+    global sprite_pix_to_world_scale
+    global _camera_width
+    global _camera_height
+
+    native_pos = Vector2()
+    native_pos.x = (world_pos.x - _camera_position.x + _camera_width / 2.0) * sprite_pix_to_world_scale
+    native_pos.y = (sprite_pix_to_world_scale * _camera_height - ((world_pos.y - _camera_position.y + _camera_height / 2.0) * sprite_pix_to_world_scale))
+
+    return native_pos
+
+
+
+
+def render_tilemaps():
+    global native_render_surface
+    global _world_to_native_pos
+
+    #go through all chunks
+    for chunk in world_data_globals.zone_dict['overworld'].chunks.values():
+
+        #get chunk bottom left pos
+        chunk_world_pos = world_data.chunk_pos_to_world(chunk.chunk_pos)
+
+        #go through tiles
+        for i, tile in enumerate(chunk.tile_data.data):
+
+            #skip tile if None
+            if tile is None: continue
+
+            #get tile world pos
+            tile_pos = chunk.tile_data.linear_to_xy(i) + chunk_world_pos
+
+            #blit to screen
+            native_render_surface.blit(resources.sprite_list[tile.tile_type.sprite], _world_to_native_pos(tile_pos).as_tuple())
 
 
 
@@ -292,15 +356,25 @@ class Render_Processor(e.Processor):
 
 
     def process(self):
+        global set_native_screen
+        global scale_native_screen_to_window
+        global render_tilemaps
+        global _world_to_native_pos
 
-        gb.game_window.fill(background_color)
 
-        world_to_pix = self.get_world_to_pix_ratio()
+        set_native_screen()
+        render_tilemaps()
+        scale_native_screen_to_window()
+        
 
-        self.render_rects(world_to_pix)
+        # world_to_pix = self.get_world_to_pix_ratio()
 
-        self.render_chunks()
+        # self.render_rects(world_to_pix)
 
-        self.render_sprites(world_to_pix)
+        # self.render_chunks()
 
-        py.display.update()
+        # self.render_sprites(world_to_pix)
+
+
+
+        py.display.flip()
