@@ -6,6 +6,8 @@ import esper as e
 import core_classes as core
 import resources.globals as resources
 import world_data.world_data as world_data
+import world_data.globals as world_data_globals
+import math
 
 def init():
     set_camera_zoom()
@@ -42,10 +44,12 @@ sprite_pix_to_world_scale = 8
 #scale for how many screen pixels are one unit in length for the world
 world_to_pix_ratio = 0
 '''func for getting pixel pos of a world pos'''
-def world_to_pixel(pos = core.Vector2(), world_to_pix = 0.0):
+def world_to_pixel(pos = core.Vector2()):
+    global world_to_pix_ratio
+
     screen_pos = Vector2()
-    screen_pos.x = (pos.x - _camera_position.x + _camera_width / 2.0) * world_to_pix
-    screen_pos.y = gb.SCREEN_HEIGHT - ((pos.y - _camera_position.y + _camera_height / 2.0) * world_to_pix)
+    screen_pos.x = math.ceil((pos.x - _camera_position.x + _camera_width / 2.0) * world_to_pix_ratio)
+    screen_pos.y = math.ceil(gb.SCREEN_HEIGHT - ((pos.y - _camera_position.y + _camera_height / 2.0) * world_to_pix_ratio))
     return screen_pos
 
 #list filled with scaled sprites, in the same order as in resources
@@ -132,7 +136,7 @@ class Render_Processor(e.Processor):
         global _camera_height
         global _camera_width
 
-        screen_pos = world_to_pixel(Vector2(pos.vector.x - unscaled_rect.width / 2.0, pos.vector.y + unscaled_rect.height / 2.0), world_to_pix)
+        screen_pos = world_to_pixel(Vector2(pos.vector.x - unscaled_rect.width / 2.0, pos.vector.y + unscaled_rect.height / 2.0))
 
         return py.Rect(
             screen_pos.x, screen_pos.y,
@@ -181,7 +185,7 @@ class Render_Processor(e.Processor):
         for (pos, sprite_id) in sprites:
 
             sprite_metadata = resources.sprite_metadata_list[sprite_id]
-            scaled_pos = world_to_pixel(Vector2(pos.x - sprite_metadata.size.x / 2.0 / sprite_pix_to_world_scale, pos.y + sprite_metadata.size.y / 2.0 / sprite_pix_to_world_scale), world_to_pix)
+            scaled_pos = world_to_pixel(Vector2(pos.x - sprite_metadata.size.x / 2.0 / sprite_pix_to_world_scale, pos.y + sprite_metadata.size.y / 2.0 / sprite_pix_to_world_scale))
 
             sprites[index] = (scaled_pos, sprite_id)
 
@@ -243,7 +247,6 @@ class Render_Processor(e.Processor):
         return chunks
 
 
-
     def scale_tilemaps(self, unscaled_chunks):
         pass
 
@@ -251,29 +254,35 @@ class Render_Processor(e.Processor):
     def draw_tilemaps(self, chunks):
         global world_to_pix_ratio
         global scaled_sprites
+        global world_to_pixel
 
         
         for chunk in chunks:
-            tiles = chunk.tile_data
             chunk_world_pos = world_data.chunk_pos_to_world(chunk.chunk_pos)
+            chunk_screen_pos = world_to_pixel(chunk_world_pos)
+
 
             #go through tiles in chunk
-            for i, tile in enumerate(tiles.data):
+            for x in range(0, world_data_globals.CHUNK_SIZE):
+                for y in range(0, world_data_globals.CHUNK_SIZE):
 
-                #skip if None
-                if tile is None:
-                    continue
+                    #get tile
+                    tile = chunk.tile_data.get_cell(x,y)
 
-                #get screen pos
-                local_pos = tiles.linear_to_xy(i)
-                screen_pos = (local_pos + chunk_world_pos)
-                screen_pos *= world_to_pix_ratio
+                    #skip if None
+                    if tile is not None:
+                        
+                        #get spirte index
+                        sprite_index = tile.tile_type.sprite
 
-                #get spirte index
-                sprite_index = tile.tile_type.sprite
+                        #draw to screen
+                        gb.game_window.blit(scaled_sprites[sprite_index], chunk_screen_pos.as_tuple())
 
-                #draw to screen
-                gb.game_window.blit(scaled_sprites[sprite_index], screen_pos.as_tuple())
+                    #increment chunk screen pos
+                    chunk_screen_pos.x += world_to_pix_ratio
+                
+                #increment chunk screen pos
+                chunk_screen_pos.y += world_to_pix_ratio
 
 
 

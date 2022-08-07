@@ -104,6 +104,6 @@ class Grid():
 
         #get linear pos, return False if out of bounds
         if (linear_pos := self.xy_to_linear(x,y)) == None:
-            return False
+            return None
         else:
             return self.data[linear_pos]
