@@ -1,7 +1,7 @@
 from core_classes import *
 import esper as e
 import input_manager
-import physics
+import physics.physics as physics
 import global_variables as gb
 
 

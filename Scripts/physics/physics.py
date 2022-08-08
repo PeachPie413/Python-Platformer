@@ -3,6 +3,8 @@ import global_variables as gb
 import esper as e
 from core_classes import *
 import math
+from physics.globals import *
+import rendering.rendering as rendering
 
 
 
@@ -40,6 +42,24 @@ class Friction:
         
 
 
+#=========================================================================================================================
+#DEBUGGING
+#=========================================================================================================================
+
+
+
+def Render_Colliders():
+    global DEBUG_RENDER_COLLIDERS, DEBUG_COLLIDER_COLOR
+
+    #go through all enttiies w/ a pos and a collider and render them
+    for ent, (pos, collider) in gb.entity_world.get_components(Position, Collider):
+        pos: Position
+        collider: Collider
+
+        rendering.draw_rect(
+            rendering.Renderable_Rect(DEBUG_COLLIDER_COLOR, collider.width, collider.height, 2),
+            pos.vector
+        )
 
 class Forces_Processor(e.Processor):
 
@@ -98,8 +118,8 @@ class Velocity_Processor(e.Processor):
         return None
             
 
-    '''set pos of collider given the collider it colides with. Returns side it collided with using a vec2'''
     def set_post_collision_pos(self, pos = Vector2(), collider = Collider(), colliding_collider = Collider(), colliding_pos = Vector2()):
+        '''set pos of collider given the collider it colides with. Returns side it collided with using a vec2'''
 
         #get move amount for dimensions
         move_amount_x = (collider.width + colliding_collider.width) / 2.0 - abs(pos.x - colliding_pos.x)

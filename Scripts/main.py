@@ -2,12 +2,11 @@ from core_classes import *
 from input_manager import Input_Direction
 from rendering.rendering import Camera_Follow
 from core_classes import Vector2
-from physics import Collider, Velocity
 from core_classes import Position
 import global_variables as gb
 import rendering.rendering as render_manager
 import input_manager
-import physics
+import physics.physics as physics
 import pygame as py
 import core_classes as core
 import character_controller
@@ -59,6 +58,11 @@ camera = gb.entity_world.create_entity(
     Position()
 )
 
+collider = gb.entity_world.create_entity(
+    physics.Collider(4,4),
+    Position(),
+)
+
 #main game loop
 delta_time_clock = py.time.Clock()
 while not gb.game_done:
@@ -69,7 +73,12 @@ while not gb.game_done:
         render_manager.set_camera_zoom(render_manager.camera_zoom + input_manager.scroll_delta)
 
     if input_manager.input_dir.as_tuple() != (0.0, 0.0):
-        for ent, (pos, cam_follow) in gb.entity_world.get_components(Position, render_manager.Camera_Follow):
+        for ent, (pos, input_dir) in gb.entity_world.get_components(Position, input_manager.Input_Direction):
             pos.vector += Vector2(input_manager.input_dir.x * gb.delta_time * 10, input_manager.input_dir.y * gb.delta_time * 10)
+
+    physics.Render_Colliders()
+
+    mouse_pos = py.mouse.get_pos()
+    print(render_manager.screen_to_world(Vector2(mouse_pos[0], mouse_pos[1])).as_tuple())
 
     gb.entity_world.process()

@@ -36,10 +36,11 @@ _camera_width = 10.0
 
 
 class Renderable_Rect:
-    def __init__(self, color = (255, 192, 203), width = 1.0, height = 1.0) -> None:
+    def __init__(self, color = (255, 192, 203), width = 1.0, height = 1.0, border_width = 0) -> None:
         self.color = color
         self.width = width
         self.height = height
+        self.border_width = border_width
 
 class Sprite:
     def __init__(self, sprite_id = 0) -> None:
@@ -57,8 +58,9 @@ class Camera_Follow:
 
 
 
-'''create the native screen, the one that is not sclaed to screen'''
 def set_native_screen():
+    '''create the native screen, the one that is not sclaed to screen'''
+
     global native_render_surface
     global _camera_width
     global _camera_height
@@ -71,14 +73,18 @@ def set_native_screen():
 
     native_render_surface.fill(_screen_background_color)
 
-'''take the native screen and scale it to the game window'''
-def scale_native_screen_to_window():
+
+def _scale_native_screen_to_window():
+    '''take the native screen and scale it to the game window'''
+
     global native_render_surface
 
     py.transform.scale(native_render_surface, (gb.SCREEN_WIDTH, gb.SCREEN_HEIGHT), gb.game_window)
 
-'''get the native screen pos of a world pos'''
+
 def _world_to_native_pos(world_pos = Vector2()):
+    '''get the native screen pos of a world pos'''
+
     global _camera_position
     global _sprite_pix_to_world_scale
     global _camera_width
@@ -90,12 +96,47 @@ def _world_to_native_pos(world_pos = Vector2()):
 
     return native_pos
 
-'''create the game window'''
+
+def world_to_screen(world_pos = Vector2()):
+    '''get the screen position of a world position'''
+
+    global _camera_position, _camera_width, _camera_height
+
+    world_to_screen = gb.SCREEN_WIDTH / _camera_width
+
+    screen_pos = Vector2()
+    screen_pos.x = (world_pos.x - _camera_position.x + _camera_width / 2.0) * world_to_screen
+    screen_pos.y = (gb.SCREEN_HEIGHT - ((world_pos.y - _camera_position.y + _camera_height / 2.0) * world_to_screen))
+
+    return screen_pos
+
+
+def screen_to_world(screen_pos = Vector2()):
+    '''take a point on the screen and get it's world position'''
+
+    global _camera_position, _camera_width, _camera_height
+
+    world_to_screen = gb.SCREEN_WIDTH / _camera_width
+
+    world_pos = Vector2(screen_pos.x, screen_pos.y)
+    world_pos.y += gb.SCREEN_HEIGHT
+    world_pos /= world_to_screen
+    world_pos += _camera_position
+    world_pos -= (Vector2(_camera_width, _camera_height) / 2.0)
+
+    return world_pos
+
+
+
 def create_game_window():
+    '''create the game window'''
+
     gb.game_window = py.display.set_mode((gb.SCREEN_WIDTH, gb.SCREEN_HEIGHT))
 
-'''set the width of the camera in world units'''
+
 def set_camera_zoom(zoom = 10.0):
+    '''set the width of the camera in world units'''
+
     if zoom < 10.0: zoom = 10.0
 
     global _camera_width
@@ -113,12 +154,54 @@ def set_camera_zoom(zoom = 10.0):
 
 
 #=========================================================================================================================
+#RECT RENDERING
+#=========================================================================================================================
+
+
+
+#rects to draw this frame
+_frame_rects_to_draw = []
+
+'''add a rect to be drawn this frame'''
+def draw_rect(rect = Renderable_Rect(), pos = Vector2()):
+    global _frame_rects_to_draw
+
+    _frame_rects_to_draw.append((rect, pos))
+
+
+def _render_rects():
+    '''render rects to the native screen'''
+
+    global _frame_rects_to_draw, native_render_surface, _world_to_native_pos, _sprite_pix_to_world_scale
+
+    #draw rects to native screen
+    for rect, pos in _frame_rects_to_draw:
+        pos: Vector2
+        rect: Renderable_Rect
+
+        native_pos = _world_to_native_pos(pos)
+
+        half_height = rect.height / 2.0 * _sprite_pix_to_world_scale
+        top = native_pos.y + half_height
+        left = native_pos.x - rect.width / 2.0 * _sprite_pix_to_world_scale
+
+        #draw to native screen
+        py.draw.rect(native_render_surface, rect.color, 
+        (left, top, rect.width * _sprite_pix_to_world_scale, rect.height * _sprite_pix_to_world_scale),
+        rect.border_width)
+
+    #clear rects to draw
+    _frame_rects_to_draw.clear()
+
+
+
+#=========================================================================================================================
 #TILEMAP RENDERING
 #=========================================================================================================================
 
 
 
-def render_tilemaps():
+def _render_tilemaps():
     global native_render_surface
     global _world_to_native_pos
 
@@ -183,20 +266,23 @@ def _draw_sprites(sprites = []):
 
 
 class Render_Processor(e.Processor):
+    '''processor that is responsible for drawing things to the screen'''
 
     def process(self):
-        global _world_to_native_pos, _render_sprites, render_tilemaps, scale_native_screen_to_window, set_native_screen
+        global _world_to_native_pos, _render_sprites, _render_tilemaps, _scale_native_screen_to_window, set_native_screen, _render_rects
 
 
         set_native_screen()
-        render_tilemaps()
+        _render_tilemaps()
         _render_sprites()
+        _render_rects()
 
-        scale_native_screen_to_window()
+        _scale_native_screen_to_window()
         py.display.flip()
 
 
 class Follow_Camera_Processor(e.Processor):
+    '''processor that gets the first entity w/ a follow_camera tag, and sets the camera pos to be the same as the entity's'''
 
     def process(self):
         global _camera_position
