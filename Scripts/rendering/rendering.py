@@ -119,10 +119,12 @@ def screen_to_world(screen_pos = Vector2()):
     world_to_screen = gb.SCREEN_WIDTH / _camera_width
 
     world_pos = Vector2(screen_pos.x, screen_pos.y)
-    world_pos.y += gb.SCREEN_HEIGHT
+    world_pos.y = -world_pos.y + gb.SCREEN_HEIGHT
     world_pos /= world_to_screen
     world_pos += _camera_position
     world_pos -= (Vector2(_camera_width, _camera_height) / 2.0)
+
+    world_pos: Vector2
 
     return world_pos
 
@@ -181,8 +183,7 @@ def _render_rects():
 
         native_pos = _world_to_native_pos(pos)
 
-        half_height = rect.height / 2.0 * _sprite_pix_to_world_scale
-        top = native_pos.y + half_height
+        top = native_pos.y - rect.height / 2.0 * _sprite_pix_to_world_scale
         left = native_pos.x - rect.width / 2.0 * _sprite_pix_to_world_scale
 
         #draw to native screen
@@ -210,6 +211,9 @@ def _render_tilemaps():
 
         #get chunk bottom left pos
         chunk_world_pos = world_data.chunk_pos_to_world(chunk.chunk_pos)
+
+        #move up one b/c rendering uses top-left as pos
+        chunk_world_pos.y += 1
 
         #go through tiles
         for i, tile in enumerate(chunk.tile_data.data):

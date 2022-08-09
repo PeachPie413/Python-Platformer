@@ -74,7 +74,7 @@ class Grid():
         if linear_pos >= len(self.data):
             return None
         else:
-            return linear_pos
+            return int(linear_pos)
 
 
     '''get the xy coords from a linear pos as an (x,y) tuple, returns none if out of bounds'''

@@ -13,6 +13,7 @@ import character_controller
 import resources.resources as resources
 import world_data.world_data as world_data
 import esper as e
+import chunk_colliders.chunk_colliders as chunk_colliders
 
 py.init()
 
@@ -58,10 +59,7 @@ camera = gb.entity_world.create_entity(
     Position()
 )
 
-collider = gb.entity_world.create_entity(
-    physics.Collider(4,4),
-    Position(),
-)
+chunk_colliders.create_colliders()
 
 #main game loop
 delta_time_clock = py.time.Clock()
@@ -78,7 +76,8 @@ while not gb.game_done:
 
     physics.Render_Colliders()
 
-    mouse_pos = py.mouse.get_pos()
-    print(render_manager.screen_to_world(Vector2(mouse_pos[0], mouse_pos[1])).as_tuple())
+    #print mouse pos to console
+    # mouse_pos = py.mouse.get_pos()
+    # print(render_manager.screen_to_world(Vector2(mouse_pos[0], mouse_pos[1])).as_tuple())
 
     gb.entity_world.process()
