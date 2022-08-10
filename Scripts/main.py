@@ -19,6 +19,7 @@ py.init()
 
 resources.load_assets()
 render_manager.init()
+chunk_colliders.init()
 
 tile = world_data.Tile(resources.tile_type_dict['stone'])
 chunk = world_data.create_chunk()
@@ -58,8 +59,6 @@ camera = gb.entity_world.create_entity(
 
     Position()
 )
-
-chunk_colliders.create_colliders()
 
 #main game loop
 delta_time_clock = py.time.Clock()

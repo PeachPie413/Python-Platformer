@@ -7,7 +7,7 @@ class Vector2():
         self.y = y
 
     def __add__(self, other):
-        if type(other) == float:
+        if type(other) == float or type(other) is int:
             return Vector2(self.x + other, self.y + other)
         elif type(other) == Vector2:
             return Vector2(self.x + other.x, self.y + other.y)
@@ -46,6 +46,9 @@ class Vector2():
             return Vector2(self.x / other, self.y / other)
         elif type(self) == Vector2:
             return Vector2(self.x / other.x, self.y / other.y)
+
+    def __str__(self) -> str:
+        return str(self.as_tuple())
 
     def as_tuple(self):
         return (self.x, self.y)
