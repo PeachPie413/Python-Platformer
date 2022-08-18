@@ -28,16 +28,16 @@ def create_colliders(chunk_pos = Vector2()):
     global _chunk_colliders
 
     #if chunk does not exist then skip
-    if chunk_pos.as_tuple() not in world_data_globals.zone_dict['overworld'].chunks:
-        print('chunk ' + str(chunk_pos.as_tuple()) + ' does not exist!')
+    if chunk_pos.to_tuple() not in world_data_globals.zone_dict['overworld'].chunks:
+        print('chunk ' + str(chunk_pos.to_tuple()) + ' does not exist!')
         return
 
     #add chunk to collider dict
     created_colliders = []
-    _chunk_colliders[chunk_pos.as_tuple()] = created_colliders
+    _chunk_colliders[chunk_pos.to_tuple()] = created_colliders
 
     #get chunk
-    chunk = world_data_globals.zone_dict['overworld'].chunks[chunk_pos.as_tuple()]
+    chunk = world_data_globals.zone_dict['overworld'].chunks[chunk_pos.to_tuple()]
     chunk: world_data.Chunk
     tiles = chunk.tile_data
 
@@ -50,12 +50,17 @@ def create_colliders(chunk_pos = Vector2()):
     #while the tiles taken is not all the tiles in the chunk
     while len(taken_tiles) < world_data.CHUNK_SIZE * world_data.CHUNK_SIZE:
 
+        #if tile is in taken tiles then skip
+        if start_pos.to_tuple() in taken_tiles:
+            start_pos = _advance_pos(start_pos)
+            continue
+
         #get tile
         tile = tiles.get_cell(start_pos.x, start_pos.y)
 
         #skip if tile is invalid
         if tile is None or tile.tile_type.collides is False:
-            taken_tiles.append(start_pos.as_tuple())
+            taken_tiles.append(start_pos.to_tuple())
             start_pos = _advance_pos(start_pos)
             continue
 
@@ -67,10 +72,11 @@ def create_colliders(chunk_pos = Vector2()):
         end_pos = _take_vertically(start_pos, end_pos, tiles, taken_tiles)
 
         #create collider and add to created colliders
-        collider_ent = _create_collider(start_pos, end_pos)
+        collider_ent = _create_collider(start_pos, end_pos, world_data.chunk_pos_to_world(chunk_pos))
         created_colliders.append(collider_ent)
 
-        start_pos = _advance_pos(end_pos)
+        #move pos along chunk
+        start_pos = _advance_pos(start_pos)
 
 
 def _advance_pos(pos = Vector2()):
@@ -93,14 +99,14 @@ def _take_horizontally(start_pos = Vector2(), tiles = Grid(), taken_tiles = []):
     #keep going until hit the end of the chunk
     while current_pos.x < world_data_globals.CHUNK_SIZE:
 
-        tile = tiles.get_cell(start_pos.x + 1, start_pos.y)
+        tile = tiles.get_cell(current_pos.x, start_pos.y)
 
         #stop if tile is none, in taken tiles, or not want a collider
-        if tile is None or tile.tile_type.collides == False or current_pos.as_tuple() in taken_tiles:
+        if tile is None or tile.tile_type.collides == False or current_pos.to_tuple() in taken_tiles:
             break
 
         #add tile to taken tiles and move forward by 1
-        taken_tiles.append(current_pos.as_tuple())
+        taken_tiles.append(current_pos.to_tuple())
 
         current_pos.x += 1
 
@@ -148,14 +154,14 @@ def _take_vertically(left_pos = Vector2(), right_pos = Vector2(), tiles = Grid()
     return Vector2(right_pos.x, current_elevation)
 
 
-def _create_collider(bottom_left = Vector2(), top_right = Vector2()):
+def _create_collider(bottom_left = Vector2(), top_right = Vector2(), chunk_world_pos = Vector2()):
     '''return a collider entity that covers the given tiles'''
 
     #uses pos of tile as bottom-left of tile, so add one to top-right
     top_right = top_right + 1
 
     #get center of collider
-    center = (bottom_left + top_right) / 2.0
+    center = (bottom_left + top_right) / 2.0 + chunk_world_pos
 
     #width and height
     width = top_right.x - bottom_left.x
@@ -163,7 +169,7 @@ def _create_collider(bottom_left = Vector2(), top_right = Vector2()):
 
     #create entity
     collider_ent = gb.entity_world.create_entity(
-        physics.Collider(width, height),
+        physics.Shape(width, height),
         Position(center)
     )
 
@@ -172,9 +178,23 @@ def _create_collider(bottom_left = Vector2(), top_right = Vector2()):
 
 def destroy_colliders(chunk_pos = Vector2()):
     '''destroy colliders for a chunk'''
+    global _chunk_colliders
+
+    #if chunk doesnt exist then skip
+    if chunk_pos.to_tuple() not in _chunk_colliders:
+        print('Chunk: ' + str(chunk_pos) + ' does not exist!')
+        return
+
+    #go through colliders for chunk and destroy them, then clear list
+    colliders = _chunk_colliders[chunk_pos.to_tuple()]
+    for collider in colliders:
+
+        gb.entity_world.delete_entity(collider)
+
+    colliders.clear()
 
 
-def recreate_colliders(chunk_pos = Vector2()):
+def recreate_colliders(chunk_pos = Vector2(), tile_pos = Vector2()):
     '''destroy then re-create the colliders for a chunk'''
 
     destroy_colliders(chunk_pos)

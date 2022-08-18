@@ -1,3 +1,4 @@
+from math import ceil
 from core_classes import *
 from rendering.globals import *
 import global_variables as gb
@@ -6,6 +7,7 @@ import esper as e
 import resources.globals as resources
 import world_data.world_data as world_data
 import world_data.globals as world_data_globals
+import helper_funcs
 
 
 def init():
@@ -155,6 +157,16 @@ def set_camera_zoom(zoom = 10.0):
 
 
 
+def get_mouse_world_pos():
+    '''get the world pos of the mouse'''
+    global screen_to_world
+
+    mouse_pos = py.mouse.get_pos()
+    mouse_pos = Vector2(mouse_pos[0], mouse_pos[1])
+    return screen_to_world(mouse_pos)
+
+
+
 #=========================================================================================================================
 #RECT RENDERING
 #=========================================================================================================================
@@ -202,12 +214,17 @@ def _render_rects():
 
 
 
-def _render_tilemaps():
-    global native_render_surface
-    global _world_to_native_pos
+def _render_tilemaps(): #TODO make this faster
+    global native_render_surface, _world_to_native_pos, _get_chunks_to_render
 
     #go through all chunks
-    for chunk in world_data_globals.zone_dict['overworld'].chunks.values():
+    for chunk_pos in _get_chunks_to_render():
+
+        chunk = world_data.get_chunk(chunk_pos)
+
+        #skip if chunk is None
+        if chunk is None:
+            continue
 
         #get chunk bottom left pos
         chunk_world_pos = world_data.chunk_pos_to_world(chunk.chunk_pos)
@@ -225,12 +242,23 @@ def _render_tilemaps():
             tile_pos = chunk.tile_data.linear_to_xy(i) + chunk_world_pos
 
             #blit to screen
-            native_render_surface.blit(resources.sprite_list[tile.tile_type.sprite], _world_to_native_pos(tile_pos).as_tuple())
+            native_render_surface.blit(resources.sprite_list[tile.tile_type.sprite], _world_to_native_pos(tile_pos).to_tuple())
 
 
-'''return chunks that are in the cameras view'''
+
 def _get_chunks_to_render():
-    pass
+    '''return chunks that are in the cameras view'''
+    global _camera_position, _camera_width
+
+    radius = int(ceil(_camera_width / world_data_globals.CHUNK_SIZE))
+
+    #get chunk positions
+    chunk_positions = helper_funcs.get_positions_in_square(radius, world_data.world_pos_to_chunk(_camera_position))
+
+    return chunk_positions
+
+    
+    
 
 
 
@@ -259,7 +287,7 @@ def _draw_sprites(sprites = []):
         native_pos = _world_to_native_pos(pos.vector)
 
         #blit to native
-        native_render_surface.blit(resources.sprite_list[sprite.sprite_id], native_pos.as_tuple())
+        native_render_surface.blit(resources.sprite_list[sprite.sprite_id], native_pos.to_tuple())
 
 
 

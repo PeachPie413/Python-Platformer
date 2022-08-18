@@ -7,5 +7,5 @@ sprite_list = []
 sprite_id_dict = {}
 #list of sprite data, ex width, height in a list so it can be quickyl read w/out loading the whole image
 sprite_metadata_list = []
-#dict of tile types, use tile type name to get data
-tile_type_dict = {}
+tile_type_dict = {} 
+'''dict of tile types, use tile type name to get data'''

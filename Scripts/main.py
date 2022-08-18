@@ -1,4 +1,5 @@
 from core_classes import *
+import helper_funcs
 from input_manager import Input_Direction
 from rendering.rendering import Camera_Follow
 from core_classes import Vector2
@@ -7,11 +8,13 @@ import global_variables as gb
 import rendering.rendering as render_manager
 import input_manager
 import physics.physics as physics
+import physics.globals as physics_globals
 import pygame as py
-import core_classes as core
 import character_controller
 import resources.resources as resources
+import resources.globals as resources_globals
 import world_data.world_data as world_data
+import world_data.click_change_tile as click_change_tile
 import esper as e
 import chunk_colliders.chunk_colliders as chunk_colliders
 
@@ -21,9 +24,7 @@ resources.load_assets()
 render_manager.init()
 chunk_colliders.init()
 
-tile = world_data.Tile(resources.tile_type_dict['stone'])
-chunk = world_data.create_chunk()
-chunk.tile_data = Grid(world_data.CHUNK_SIZE, world_data.CHUNK_SIZE, tile)
+world_data.create_chunks_in_square()
 
 #add processors to the world
 #rendering
@@ -34,8 +35,8 @@ gb.entity_world.add_processor(input_manager.Input_Direction_Processor(), 89)
 #player movement
 gb.entity_world.add_processor(character_controller.Character_Controller_Processor())
 #physics
-gb.entity_world.add_processor(physics.Forces_Processor(), 98)
-gb.entity_world.add_processor(physics.Velocity_Processor(), 99)
+#sgb.entity_world.add_processor(physics.Forces_Processor(), 98)
+#gb.entity_world.add_processor(physics.Velocity_Processor(), 99)
 
 #create player entity
 # player = gb.entity_world.create_entity(
@@ -69,14 +70,24 @@ while not gb.game_done:
     if input_manager.scroll_delta != 0:
         render_manager.set_camera_zoom(render_manager.camera_zoom + input_manager.scroll_delta)
 
-    if input_manager.input_dir.as_tuple() != (0.0, 0.0):
+    if input_manager.input_dir.to_tuple() != (0.0, 0.0):
         for ent, (pos, input_dir) in gb.entity_world.get_components(Position, input_manager.Input_Direction):
             pos.vector += Vector2(input_manager.input_dir.x * gb.delta_time * 10, input_manager.input_dir.y * gb.delta_time * 10)
 
-    physics.Render_Colliders()
+    if physics_globals.DEBUG_RENDER_COLLIDERS:
+        physics.Render_Colliders()
 
-    #print mouse pos to console
-    # mouse_pos = py.mouse.get_pos()
-    # print(render_manager.screen_to_world(Vector2(mouse_pos[0], mouse_pos[1])).as_tuple())
+    if world_data.DEBUG_SHOW_CHUNK_BORDERS:
+        world_data.show_chunk_borders()
+
+    #if input_manager.left_click_pressed:
+        #click_change_tile._place_tile_at_mouse_pos('stone')
+
+    if input_manager.left_click and input_manager.mouse_button_down:
+        collider = gb.entity_world.create_entity(Position(render_manager.get_mouse_world_pos()))
+        physics.register_collider(collider)
+
+    if input_manager.right_click:
+        click_change_tile._place_tile_at_mouse_pos(None)
 
     gb.entity_world.process()

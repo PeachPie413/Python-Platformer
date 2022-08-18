@@ -48,9 +48,9 @@ class Vector2():
             return Vector2(self.x / other.x, self.y / other.y)
 
     def __str__(self) -> str:
-        return str(self.as_tuple())
+        return str(self.to_tuple())
 
-    def as_tuple(self):
+    def to_tuple(self):
         return (self.x, self.y)
 
 
@@ -110,3 +110,13 @@ class Grid():
             return None
         else:
             return self.data[linear_pos]
+
+
+    def is_cell_in_grid(self, x = 0, y = 0):
+        '''check if a position is in the grid'''
+
+        linear_pos = self.xy_to_linear(x,y)
+        if linear_pos < 0 or linear_pos >= len(self.data):
+            return False
+        else:
+            return True
