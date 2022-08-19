@@ -79,21 +79,63 @@ class PhysicsWorld:
         return Vector2(floor(world_pos.x / _bucket_size), floor(world_pos.y / _bucket_size))
 
     
-    def add_collider(self, world_pos = Vector2(), collider_entity = int):
+    def add_collider(self, collider_data = [], collider_entity = 0):
         '''add a collider to the physics world'''
 
-        bucket_pos = self.get_bucket_pos(world_pos).to_tuple()
-        bucket = None
+        world_pos = gb.entity_world.component_for_entity(collider_entity, Position).vector
+        bucket_pos = self.get_bucket_pos(world_pos)
 
         #get bucket
-        if bucket_pos not in self.buckets:
-            bucket = []
-            self.buckets[bucket_pos] = bucket
+        bucket = self._get_bucket(bucket_pos)
+
+        bucket[collider_entity] = collider_data
+
+
+    def update_collider_pos(self, old_pos = Vector2(), new_pos = Vector2(), entity = 0): #TODO have empty buckets be removed once empty
+        '''see if a colldier needs to be changed to a new bucket, and if so then update it'''
+
+        #check if bucket has changed
+        old_bucket_pos = _physics_world.get_bucket_pos(old_pos)
+        new_bucket_pos = _physics_world.get_bucket_pos(new_pos)
+        if new_bucket_pos != old_bucket_pos:
+
+            #then remove from old bucket
+            old_bucket = self._get_bucket(old_bucket_pos)
+            collider_data = old_bucket[entity]
+            old_bucket.pop(entity)
+
+            #try remove it
+            self._try_remove_bucket(old_bucket_pos)
+
+            #add to new bucket
+            new_bucket = self._get_bucket(new_bucket_pos)
+            new_bucket[entity] = collider_data
+
+
+    def _try_remove_bucket(self, bucket_pos = Vector2()):
+        '''remove a bucket from buckets if it is empty'''
+        bucket_key = bucket_pos.to_tuple()
+
+        bucket = self.buckets[bucket_key]
+
+        if len(bucket) == 0:
+            del self.buckets[bucket_key]
+
+
+    def _get_bucket(self, bucket_pos = Vector2()):
+        '''get a bucket at the bucket pos, creates a new bucket if one does not exist'''
+
+        bucket = None
+        bucket_key = bucket_pos.to_tuple()
+
+        if bucket_key not in self.buckets:
+            bucket = {}
+            self.buckets[bucket_key] = bucket
         else:
-            bucket = self.buckets[bucket_pos]
+            bucket = self.buckets[bucket_key]
 
-        bucket.append(collider_entity)
-
+        return bucket
+            
 
 
 
@@ -124,7 +166,8 @@ def register_collider(entity = int, width = 1, height = 1, is_dynamic = True, ma
         gb.entity_world.add_component(entity, collision_state)
 
     #add collider to physics world
-    _physics_world.add_collider(gb.entity_world.component_for_entity(entity, Position).vector, entity)
+    pos = gb.entity_world.component_for_entity(entity, Position).vector
+    _physics_world.add_collider([pos, shape], entity)
 
     
 
@@ -148,6 +191,19 @@ def Render_Colliders():
             pos.vector
         )
 
+
+def render_buckets():
+    '''render the buckets of the physics world'''
+    global _physics_world, _bucket_size, DEBUG_BUCKET_COLOR
+
+    for bucket_pos in _physics_world.buckets:
+
+        center = Vector2(bucket_pos[0] * _bucket_size + _bucket_size / 2, bucket_pos[1] * _bucket_size + _bucket_size / 2)
+
+        rendering.draw_rect(
+            rendering.Renderable_Rect(DEBUG_BUCKET_COLOR, _bucket_size, _bucket_size, 1),
+            center
+        )
 
 
 #=========================================================================================================================
@@ -216,8 +272,60 @@ def _set_normal_forces(const_forces = {}, collision_state = Vector2()):
 
 
 
-def calculate_positions(velocity):
+def _calculate_positions():
     '''calcuate the new position of all dynamic colliders'''
+    global _pos_valid, _physics_world
+
+    #go through all dynamic colliders
+    for ent, (pos, velocity, shape, collision_state) in gb.entity_world.get_components(Position, Velocity, Shape, CollisionState):
+
+        velocity.vector = Vector2(1,1)
+
+        #skip if velocity is 0
+        if velocity.vector == Vector2():
+            continue
+
+        #get new position using velocity
+        new_pos = pos.vector + velocity.vector * gb.delta_time
+
+        #change physics world bucket if needed
+        _physics_world.update_collider_pos(pos.vector, new_pos, ent)
+
+        #do collision check
+        collided_data = _pos_valid(pos.vector, shape)
+
+        #check if new position is valid
+        # if collided_data[0] != None:
+
+        #     #if not then calculate new pos
+        #     pos = _get_collided_pos(pos, shape, collided_data[0], collided_data[1])
+
+        #set collision state
+        #collision_state.collision_state = collided_data[2]
+
+        #set new pos
+        pos.vector = new_pos
+
+
+def _aabb_collision(a_collider = Shape(), a_pos = Position(), b_collider = Shape(), b_pos = Position()):
+    '''check if 2 aabb's are colliding'''
+    a_max_x = a_pos.vector.x + a_collider.width / 2.0
+    a_min_x = a_pos.vector.x - a_collider.width / 2.0
+    b_max_x = b_pos.vector.x + b_collider.width / 2.0
+    b_min_x = b_pos.vector.x - b_collider.width / 2.0
+    a_max_y = a_pos.vector.y + a_collider.height / 2.0
+    a_min_y = a_pos.vector.y - a_collider.height / 2.0
+    b_max_y = b_pos.vector.y + b_collider.height / 2.0
+    b_min_y = b_pos.vector.y - b_collider.height / 2.0
+    return a_max_x >= b_min_x and b_max_x >= a_min_x and a_max_y >= b_min_y and b_max_y >= a_min_y
+
+
+def _pos_valid(pos = Vector2(), shape = Shape()):#TODO fill this out
+    '''check if a position and shape is not colliding with any other collider, returns collider collided with and new collision state'''
+
+
+def _get_collided_pos(moving_pos, moving_shape, collided_pos, collided_shape):#TODO fill this out
+    '''get the new position of a collider that has collided with another collider'''
 
 
 
@@ -333,7 +441,9 @@ class Velocity_Processor(e.Processor):
 
     def process(self):
         '''do physics calculations'''
-        global _calculate_normals
+        global _calculate_normals, _calculate_positions
+
+        _calculate_positions()
 
         # #go through all entities w/ pos, veloc, and collider
         # for ent, (pos, veloc, collider, forces, collided, friction) in gb.entity_world.get_components(Position, Velocity, Collider, Constant_Force, Collided_Prev_Frame, Friction):

@@ -24,7 +24,7 @@ resources.load_assets()
 render_manager.init()
 chunk_colliders.init()
 
-world_data.create_chunks_in_square()
+#world_data.create_chunks_in_square()
 
 #add processors to the world
 #rendering
@@ -35,8 +35,8 @@ gb.entity_world.add_processor(input_manager.Input_Direction_Processor(), 89)
 #player movement
 gb.entity_world.add_processor(character_controller.Character_Controller_Processor())
 #physics
-#sgb.entity_world.add_processor(physics.Forces_Processor(), 98)
-#gb.entity_world.add_processor(physics.Velocity_Processor(), 99)
+#gb.entity_world.add_processor(physics.Forces_Processor(), 98)
+gb.entity_world.add_processor(physics.Velocity_Processor(), 99)
 
 #create player entity
 # player = gb.entity_world.create_entity(
@@ -79,6 +79,9 @@ while not gb.game_done:
 
     if world_data.DEBUG_SHOW_CHUNK_BORDERS:
         world_data.show_chunk_borders()
+
+    if physics_globals.DEBUG_RENDER_BUCKETS:
+        physics.render_buckets()
 
     #if input_manager.left_click_pressed:
         #click_change_tile._place_tile_at_mouse_pos('stone')
