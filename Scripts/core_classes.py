@@ -50,6 +50,18 @@ class Vector2():
     def __str__(self) -> str:
         return str(self.to_tuple())
 
+    def __eq__(self, other) -> bool:
+        if type(other) != Vector2:
+            return False
+        else:
+            return float(self.x) == float(other.x) and float(self.y) == float(other.y)
+
+    def __ne__(self, other) -> bool:
+        if type(other) != Vector2:
+            return False
+        else:
+            return float(self.x) != float(other.x) and float(self.y) != float(other.y)
+
     def to_tuple(self):
         return (self.x, self.y)
 

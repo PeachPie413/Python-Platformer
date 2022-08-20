@@ -26,6 +26,13 @@ chunk_colliders.init()
 
 #world_data.create_chunks_in_square()
 
+# collider = gb.entity_world.create_entity(Position())
+# physics.register_collider(collider, is_dynamic=False)
+mouse_collider = gb.entity_world.create_entity(Position(render_manager.get_mouse_world_pos()))
+physics.register_collider(mouse_collider)
+
+print(Vector2(0.0, 0.0).to_tuple() != Vector2(-1, 0).to_tuple())
+
 #add processors to the world
 #rendering
 gb.entity_world.add_processor(render_manager.Render_Processor(), -99)
@@ -92,5 +99,8 @@ while not gb.game_done:
 
     if input_manager.right_click:
         click_change_tile._place_tile_at_mouse_pos(None)
+
+    pos = gb.entity_world.component_for_entity(mouse_collider, Position)
+    pos.vector = render_manager.get_mouse_world_pos()
 
     gb.entity_world.process()
